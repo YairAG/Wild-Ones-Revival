@@ -8,14 +8,14 @@ de Playdom/Disney.
 ## Qué hay en este repo
 
 Este repo es **solo el servidor de juego** (open source) y el paquete del protocolo. El frontend y el backend
-de cuentas son proyectos aparte y privados:
+de cuentas son proyectos aparte:
 
 | Pieza | Dónde |
 |---|---|
 | Servidor de juego | Este repo, `apps/server` |
 | Protocolo (tipos + validación) | Este repo, `packages/protocol`; publicado en npm como [`wildones-protocol`](https://www.npmjs.com/package/wildones-protocol) |
-| Backend de cuentas (registro, login, JWT) | Privado. Lo que debe cumplir: [docs/CUENTAS.md](docs/CUENTAS.md) |
-| Frontend | Privado. Habla con el servidor según [docs/PROTOCOL.md](docs/PROTOCOL.md) |
+| Backend de cuentas (registro, login, JWT) | Proyecto aparte. Lo que debe cumplir: [docs/CUENTAS.md](docs/CUENTAS.md) |
+| Frontend | Proyecto aparte. Habla con el servidor según [docs/PROTOCOL.md](docs/PROTOCOL.md) |
 
 ## Arrancar
 
