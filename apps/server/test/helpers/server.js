@@ -1,0 +1,99 @@
+// Arranca un entorno completo para los tests: Mongo temporal, assets inventados y el servidor real
+// (como proceso aparte). Cada archivo de test arranca el suyo.
+const { spawn } = require("child_process");
+const { once } = require("events");
+const path = require("path");
+const { MongoMemoryServer } = require("mongodb-memory-server");
+const { MongoClient } = require("mongodb");
+const serveAssets = require("../../scripts/serve-assets.js");
+const { TestClient, sleep } = require("./client.js");
+
+const ROOT = path.join(__dirname, "../..");
+const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
+
+/** Documento de jugador de prueba (clave = "clave-<dname>") */
+function user(id, dname, extra = {}) {
+  return {
+    id, dname, lkey: "clave-" + dname,
+    nw: -1, level: 0, xp: 0, gold: 1000, treats: 200, status: "playing",
+    currentPet: "1",
+    ownedPets: { 1: { id: 1, name: "Rex", type: "dog", accessories: [] } },
+    userWeaponsOwned: {}, userWeaponsEquipped: ["walk", "mortar"],
+    userAccessories: [], allowedMaps: [],
+    ...extra,
+  };
+}
+
+async function startTestServer(users) {
+  const port = 18000 + Math.floor(Math.random() * 1000); // aleatorio: evita choques con procesos viejos
+  const mongod = await MongoMemoryServer.create({ binary: { version: MONGO_VERSION } });
+  const mongoUrl = mongod.getUri().replace(/\/?$/, "/emu");
+  const mongoClient = await MongoClient.connect(mongoUrl);
+  const db = mongoClient.db();
+  await db.collection("users").insertMany(users);
+
+  const assetServer = serveAssets(path.join(__dirname, "../fixtures/assets"), 0);
+  await once(assetServer, "listening");
+
+  // --import tsx: permite que el servidor tenga archivos .ts sin compilar
+  const server = spawn(process.execPath, ["--import", "tsx", "app.js"], {
+    cwd: ROOT,
+    env: {
+      ...process.env,
+      PORT: String(port),
+      MONGO_URL: mongoUrl,
+      ASSETS_URL: `http://127.0.0.1:${assetServer.address().port}/`,
+    },
+  });
+  let log = "";
+  server.stdout.on("data", (d) => (log += d));
+  server.stderr.on("data", (d) => (log += d));
+
+  for (let i = 0; !log.includes("Accepting clients"); i++) {
+    if (i > 300) throw new Error("El servidor no arrancó en 15 s:\n" + log);
+    await sleep(50);
+  }
+
+  const clients = [];
+  return {
+    port,
+    db,
+    log: () => log,
+
+    async connect(urlPath) {
+      const c = new TestClient(port, urlPath);
+      await c.connect();
+      clients.push(c);
+      return c;
+    },
+
+    // Abre lobby y hace login; devuelve el cliente ya sin los mensajes del login
+    async login(dname) {
+      const c = await this.connect("/ballistic/lobby?session=x");
+      c.send({ command: "logIn", dname, snum: "clave-" + dname });
+      await c.next("player");
+      return c;
+    },
+
+    // Espera a que una condición sobre Mongo se cumpla (el servidor guarda sin esperar respuesta)
+    async waitForUser(dname, check) {
+      for (let i = 0; i < 50; i++) {
+        const doc = await db.collection("users").findOne({ dname });
+        if (check(doc)) return doc;
+        await sleep(20);
+      }
+      throw new Error("Mongo no se actualizó para " + dname);
+    },
+
+    async stop() {
+      clients.forEach((c) => c.close());
+      server.kill();
+      assetServer.close();
+      await mongoClient.close();
+      await mongod.stop();
+      if (process.env.SERVER_LOG) console.log(log);
+    },
+  };
+}
+
+module.exports = { startTestServer, user, sleep };

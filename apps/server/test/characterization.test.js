@@ -1,92 +1,23 @@
 // Tests de caracterización: fijan cómo se comporta el servidor HOY (bugs incluidos), para detectar
-// cualquier cambio durante la migración. Arrancan el servidor real como proceso aparte, con un Mongo
-// temporal y datos de juego inventados (test/fixtures/assets).
+// cualquier cambio durante la migración. Ver docs/TESTS.md.
 const { test, before, after } = require("node:test");
 const assert = require("node:assert/strict");
-const { spawn } = require("child_process");
 const { once } = require("events");
 const net = require("net");
-const path = require("path");
-const { MongoMemoryServer } = require("mongodb-memory-server");
-const { MongoClient } = require("mongodb");
-const serveAssets = require("../scripts/serve-assets.js");
-const { TestClient, sleep } = require("./client.js");
+const { startTestServer, user, sleep } = require("./helpers/server.js");
 
-const ROOT = path.join(__dirname, "..");
-const PORT = 18000 + Math.floor(Math.random() * 1000); // aleatorio: evita choques con procesos viejos
-const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
-
-let mongod, mongoClient, db, assetServer, server, serverLog = "";
-const clients = [];
-
-function user(id, dname) {
-  return {
-    id, dname, lkey: "clave-" + dname,
-    nw: -1, level: 0, xp: 0, gold: 1000, treats: 200, status: "playing",
-    currentPet: "1",
-    ownedPets: { 1: { id: 1, name: "Rex", type: "dog", accessories: [] } },
-    userWeaponsOwned: {}, userWeaponsEquipped: ["walk", "mortar"],
-    userAccessories: [], allowedMaps: [],
-  };
-}
-
-async function connect(urlPath) {
-  const c = new TestClient(PORT, urlPath);
-  await c.connect();
-  clients.push(c);
-  return c;
-}
-
-// Espera a que una condición sobre Mongo se cumpla (el servidor guarda sin esperar respuesta)
-async function waitForUser(dname, check) {
-  for (let i = 0; i < 50; i++) {
-    const doc = await db.collection("users").findOne({ dname });
-    if (check(doc)) return doc;
-    await sleep(20);
-  }
-  throw new Error("Mongo no se actualizó para " + dname);
-}
+let env;
+const connect = (urlPath) => env.connect(urlPath);
+const waitForUser = (dname, check) => env.waitForUser(dname, check);
 
 before(async () => {
-  mongod = await MongoMemoryServer.create({ binary: { version: MONGO_VERSION } });
-  const mongoUrl = mongod.getUri().replace(/\/?$/, "/emu");
-  mongoClient = await MongoClient.connect(mongoUrl);
-  db = mongoClient.db();
-  await db.collection("users").insertMany([user(1, "Ana"), user(2, "Beto")]);
-
-  assetServer = serveAssets(path.join(__dirname, "fixtures/assets"), 0);
-  await once(assetServer, "listening");
-
-  // --import tsx: permite que el servidor tenga archivos .ts sin compilar
-  server = spawn(process.execPath, ["--import", "tsx", "app.js"], {
-    cwd: ROOT,
-    env: {
-      ...process.env,
-      PORT: String(PORT),
-      MONGO_URL: mongoUrl,
-      ASSETS_URL: `http://127.0.0.1:${assetServer.address().port}/`,
-    },
-  });
-  server.stdout.on("data", (d) => (serverLog += d));
-  server.stderr.on("data", (d) => (serverLog += d));
-
-  for (let i = 0; !serverLog.includes("Accepting clients"); i++) {
-    if (i > 300) throw new Error("El servidor no arrancó en 15 s:\n" + serverLog);
-    await sleep(50);
-  }
+  env = await startTestServer([user(1, "Ana"), user(2, "Beto")]);
 });
 
-after(async () => {
-  clients.forEach((c) => c.close());
-  server?.kill();
-  assetServer?.close();
-  await mongoClient?.close();
-  await mongod?.stop();
-  if (process.env.SERVER_LOG) console.log(serverLog);
-});
+after(() => env?.stop());
 
 test("responde a la petición de política de Flash", async () => {
-  const socket = net.connect(PORT, "127.0.0.1");
+  const socket = net.connect(env.port, "127.0.0.1");
   socket.write("<policy-file-request/>");
   const [data] = await once(socket, "data");
   socket.destroy();
@@ -116,8 +47,8 @@ test("mensajes inválidos se descartan y se loguean; el servidor sigue respondie
   lobby.send({ command: "ping" });
   await lobby.next("ping_ack");
   assert.equal(lobby.messages.length, 0);
-  assert.ok(serverLog.includes('Mensaje inválido descartado: {"command":"buy_ammo","ammoType":5}'));
-  assert.ok(serverLog.includes('Mensaje inválido descartado: {"command":"comando_inventado"}'));
+  assert.ok(env.log().includes('Mensaje inválido descartado: {"command":"buy_ammo","ammoType":5}'));
+  assert.ok(env.log().includes('Mensaje inválido descartado: {"command":"comando_inventado"}'));
 });
 
 test("partida completa: login → quick_play → 2 jugadores → turno → game over", async (t) => {
