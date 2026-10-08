@@ -45,7 +45,7 @@ export interface Player {
   userAccessories: string[];
   durability: Record<string, number>;
   ownedPets: Record<string, Pet>;
-  userWeaponsOwned: Record<string, number | null>;
+  userWeaponsOwned: Record<string, number>; // bug: a veces NaN, que viaja como null (ver docs/BUGS.md)
   userWeaponsEquipped: string[];
   allowedMaps: string[];
 }
