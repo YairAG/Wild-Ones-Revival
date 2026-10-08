@@ -29,43 +29,63 @@ Los comandos (`pnpm start`, `pnpm test`, …) se corren desde la raíz.
 
 ## TypeScript
 
+- Todo el código es **TypeScript estricto** (`strict: true`), sin archivos `.js`.
 - Se usa **TypeScript 6.0** (`~6.0.3`), no la 7: la 7 (reescrita en Go) no trae la API de JavaScript que
   necesita `typescript-eslint`.
 - `tsconfig.base.json` en la raíz tiene la config común; cada paquete la extiende.
-- El servidor todavía es JavaScript: `allowJs` + `checkJs` hacen que TypeScript revise los `.js` sin
-  convertirlos. Se migra archivo por archivo: helpers → properties → client → slot → handler → wol.
-- `packages/protocol` ya es TypeScript estricto. Se compila a `packages/protocol/dist/` (`pnpm build:protocol`,
-  que `pnpm start`, `dev` y `test` corren solos antes).
-- En desarrollo y en los tests el servidor corre con **tsx**, que ejecuta `.ts` sin compilar.
+- Los módulos usan `import x = require(...)` / `export = X` (CommonJS): es la forma equivalente a los
+  `require`/`module.exports` del código original.
+- En desarrollo, en `pnpm start` y en los tests el servidor corre con **tsx**, que ejecuta `.ts` sin compilar.
+  `pnpm build` compila a `apps/server/dist/` y `pnpm --filter @wildones/server start:dist` lo arranca con Node.
+- `packages/protocol` se compila a `packages/protocol/dist/` (`pnpm build:protocol`, que `start`, `dev`, `test`
+  y `typecheck` corren solos antes).
+- Bugs conocidos que TypeScript detecta: marcados con `// @ts-expect-error bug: ...` (ver [BUGS.md](BUGS.md)).
+  No se arreglan durante la migración para no cambiar comportamiento.
 
 ## Validación de mensajes
 
-`handler.js` valida cada mensaje entrante con los esquemas **Zod** de `@wildones/protocol` antes de
+`handler/index.ts` valida cada mensaje entrante con los esquemas **Zod** de `@wildones/protocol` antes de
 atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.md).
 
 ## Archivos del servidor (`apps/server/`)
 
 | Archivo | Qué hace |
 |---|---|
-| `app.js` | Punto de entrada. Solo crea el servidor y lo arranca. |
-| `wol.js` | El "gerente": descarga los datos del juego (`.dat`), abre el puerto TCP, guarda la lista de conexiones y de partidas, busca/crea partidas (`findSlot`). |
-| `handler.js` | El "mesero": recibe cada mensaje, lo separa del framing y lo manda a la función que lo atiende según su `command`. |
-| `client/client.abstract.js` | Conexión recién abierta, antes de saber de qué tipo es. |
-| `client/client.lobby.js` | Conexión de lobby (menú, tienda, buscar partida). |
-| `client/client.ladder.js` | Conexión de ladder (ranking). Hoy solo responde `ping`. |
-| `client/client.game.js` | Conexión dentro de una partida. Tiene un `avatar`. |
-| `client/extensions/avatar.js` | Estado del personaje en partida (posición, dirección, si ya disparó). La parte de física no se ejecuta. |
-| `slot.js` | Una partida: jugadores, estado, turnos, reloj, fin de partida y premios. |
-| `database.js` | Acceso a MongoDB (colección `users`): contar, leer y actualizar jugadores. Driver `mongodb` 7 (servidores 4.4 a 9.0). Si no conecta, reintenta 30 s y el proceso se cae. |
-| `properties/*.js` | Plantillas con valores por defecto para armas, mapas, mascotas, accesorios y comida. Se rellenan con los `.dat`. |
-| `helpers/utils.js` | Utilidades: codificar números como texto hex, generar claves aleatorias, md5. |
-| `helpers/logger.js` | Escribe logs a archivo (está roto, ver BUGS). |
-| `helpers/point`, `physics/`, `weapons/`, `field.js` | Física del lado servidor **a medio hacer y desactivada**. |
+| `app.ts` | Punto de entrada. Solo crea el servidor y lo arranca. |
+| `wol/index.ts` | El "gerente": abre el puerto TCP, recibe conexiones, guarda clientes y partidas, y cada 100 ms avanza todas las partidas. |
+| `wol/assets.ts` | Descarga los `.dat` al arrancar y rellena las plantillas de `properties/`. |
+| `wol/matchmaking.ts` | Valida las opciones de partida y busca o crea la partida adecuada (`findSlot`). |
+| `handler/index.ts` | El "mesero": recibe los datos del socket, separa los mensajes, los valida y llama a la función de su `command`. |
+| `handler/auth.ts` | `logIn` y `start_server_connect` (identificación). |
+| `handler/shop.ts` | Tienda, mascotas, ruleta y armas equipadas. |
+| `handler/rooms.ts` | `quick_play` y salas con nombre. |
+| `handler/game.ts` | Todo lo que pasa dentro de una partida. |
+| `client/client.abstract.ts` | Conexión recién abierta, antes de saber de qué tipo es. |
+| `client/client.lobby.ts` | Conexión de lobby (menú, tienda, buscar partida). |
+| `client/client.ladder.ts` | Conexión de ladder (ranking). Hoy solo responde `ping`. |
+| `client/client.game.ts` | Conexión dentro de una partida. Tiene un `avatar`. |
+| `client/extensions/avatar.ts` | Estado del personaje en partida (posición, dirección, si ya disparó). La parte de física no se ejecuta. |
+| `slot/index.ts` | Una partida: jugadores, estado, turnos, reloj, fin de partida y premios. |
+| `slot/messages.ts` | Arma los mensajes de estado de partida (`game`, `join`, `changeTurn`, `endGame`). |
+| `slot/collision.ts` | Colisiones de la física desactivada. |
+| `database.ts` | Acceso a MongoDB (colección `users`): contar, leer y actualizar jugadores. Driver `mongodb` 7 (servidores 4.4 a 9.0). Si no conecta, reintenta 30 s y el proceso se cae. |
+| `properties/*.ts` | Plantillas con valores por defecto para armas, mapas, mascotas, accesorios y comida. Se rellenan con los `.dat`. |
+| `types/` | Tipos compartidos (socket, documento de Mongo, config). Solo tipos. |
+| `helpers/utils.ts` | Utilidades: codificar números como texto hex, generar claves aleatorias, md5. |
+| `helpers/logger.ts` | Escribe logs a archivo (está roto, ver BUGS). |
+| `helpers/point.ts`, `physics/`, `weapons/`, `field.ts` | Física del lado servidor **a medio hacer y desactivada**. |
+| `scripts/serve-assets.ts` | Sirve los `.dat` por HTTP (`pnpm assets`). |
+| `test/` | Tests (ver [TESTS.md](TESTS.md)). |
 | `user-schema.example.json` | Ejemplo del documento de jugador que espera Mongo. |
+
+## Dependencias
+
+Solo dos en ejecución: `mongodb` (driver 7) y `@wildones/protocol` (que usa `zod`). Lo demás viene de Node:
+`crypto` (uuid y md5), `fetch` (descargar los `.dat`), `net` (TCP).
 
 ## Datos del juego (assets)
 
-Al arrancar, `wol.js` descarga por HTTP desde `ASSETS_URL` estos archivos JSON:
+Al arrancar, `wol/assets.ts` descarga por HTTP desde `ASSETS_URL` estos archivos JSON:
 `Config, Accessories, Crate, Gifts, Levels, Maps, Other, PetFoods, Pets, WeaponsGrid` (`.dat`).
 Hasta que no termina, no abre el puerto. Si alguno falla, el servidor no arranca.
 

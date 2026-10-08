@@ -5,7 +5,7 @@ cada uno se corrige después en su propio commit.
 
 ## Seguridad
 
-- **Path traversal en `log_projectile`** (`handler.js` `handleLogProjectile`): `data.weapon` viene del cliente y
+- **Path traversal en `log_projectile`** (`handler/game.ts` `handleLogProjectile`): `data.weapon` viene del cliente y
   se usa en la ruta `logs/<weapon>_xy.txt`. Un cliente puede escribir en cualquier archivo.
 - **Credenciales en logs**: `handleLogin` escribe `snum` en texto plano en `logs/glogin_log.txt` junto a la IP.
 - **`snum` se reparte a otros jugadores**: `setupPlayer` copia `doc.snum` al objeto `player`, que se envía a
@@ -19,16 +19,16 @@ cada uno se corrige después en su propio commit.
 
 ## Errores que lanzan excepción (atrapada, el comando no hace nada)
 
-- `handler.js` `handleSetWeaponsEquipped`: usa `invalidItemLog` sin `this.` → `ReferenceError`.
-- `helpers/logger.js`: usa `fs` sin importarlo.
-- `wol.js` `findSlot` con nombre propio: usa `tmpId` sin definir si el nombre ya existe.
+- `handler/shop.ts` `handleSetWeaponsEquipped`: usa `invalidItemLog` sin `this.` → `ReferenceError`.
+- `helpers/logger.ts`: usa `fs` sin importarlo.
+- `wol/matchmaking.ts` `findSlot` con nombre propio: usa `tmpId` sin definir si el nombre ya existe.
 - `logIn` en una conexión `game` llama a `sendPlayerSetup`, que `GameClient` no tiene.
 - `give_medal` llama a `handleSendMedal`, que no existe.
 - `join_game` mete al cliente de **lobby** en la partida (`gameRef.addClient(client)`), aunque no tiene avatar.
 
 ## Lógica
 
-- `handler.js`: `case "get_medals"` duplicado; `handleShowMedalCollection` nunca se ejecuta.
+- `get_medals`: en el original había un segundo `case` (respondía `medal_info`) que nunca se ejecutaba.
 - `handleAccLoad`: cuenta repetidos por `accessoriesObj[item].type` (único por accesorio), así que nunca detecta
   dos accesorios de la misma categoría.
 - `projectile` resta munición aunque el jugador no tenga ese arma (`mortar` es gratis): `undefined - 1 = NaN`,
@@ -38,9 +38,14 @@ cada uno se corrige después en su propio commit.
 - Premios de fin de partida solo con más de 2 jugadores; `game_stats` siempre va en 0.
 - `sendTick` reenvía el último `synch_check` del jugador activo pero sobrescribe `tick` con el tick del servidor.
   Posible causa del desync observado (sin verificar).
-- `slot.js` `update`: compara con `new Date().now` (siempre `undefined`), así que el aviso "haven't received
+- `slot/index.ts` `update`: compara con `new Date().now` (siempre `undefined`), así que el aviso "haven't received
   tick" nunca se dispara.
-- `handlePlayerKill` y `handleRequestSynch` existen pero no están enrutados.
+- `handlePlayerKill` y `handleRequestSynch` existen pero no están enrutados (y `handleRequestSynch` llama a
+  `getSynchCommand`, que no existe).
+- `game_name_check` no convierte espacios en guiones como `create_game`: "Sala 1" aparece libre aunque exista
+  "Sala-1". Fijado en los tests.
+- `delete_pet` deja `currentPet` como número (`1`) y `change_pet` como texto (`"2"`).
+- `weapons/mortar.ts`: construir un `Mortar` lanza `TypeError` (`Physical.apply` sobre una clase).
 
 ## Protocolo / transporte
 
@@ -51,7 +56,7 @@ cada uno se corrige después en su propio commit.
 
 ## Código muerto
 
-- La física del servidor no corre: `step()`/`move()` comentados en `slot.js`, `Field` nunca carga el bitmap,
+- La física del servidor no corre: `step()`/`move()` comentados en `slot/index.ts`, `Field` nunca carga el bitmap,
   `addProjectile` no se llama y `makeWeapon` tiene otra firma. Bugs dentro de esa física (marcados en el
   código con `@ts-expect-error` o `// bug:`), que hoy no se ejecutan:
   - `avatar.ts`: usa `Utils` sin importarlo (`export()`), `X`/`Y`/`gA`/`A`/`Va` sin `this.` en `step()`,

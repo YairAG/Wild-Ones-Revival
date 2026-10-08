@@ -22,18 +22,18 @@ arreglamos ese bug, se actualiza el test en el mismo commit que el arreglo.
 
 ## Cómo funcionan
 
-Cada archivo de test arranca su propio entorno con `test/helpers/server.js`:
+Cada archivo de test arranca su propio entorno con `test/helpers/server.ts`:
 
 1. Un **MongoDB temporal** (`mongodb-memory-server`) con jugadores de prueba (clave `clave-<nombre>`).
-2. Los **datos de juego inventados** de `test/fixtures/assets/`, servidos con `scripts/serve-assets.js`.
-3. El **servidor real** (`app.js` con tsx) como otro proceso, en un puerto aleatorio.
+2. Los **datos de juego inventados** de `test/fixtures/assets/`, servidos con `scripts/serve-assets.ts`.
+3. El **servidor real** (`app.ts` con tsx) como otro proceso, en un puerto aleatorio.
 
-Después se conectan con `test/helpers/client.js`, un cliente mínimo que habla el protocolo.
+Después se conectan con `test/helpers/client.ts`, un cliente mínimo que habla el protocolo.
 
 | Archivo | Qué cubre |
 |---|---|
-| `characterization.test.js` | Política de Flash, ladder, login, mensajes inválidos y una partida completa: `quick_play` → entrar → `startGame` → movimiento, chat, apuntar, `on_ready`, `synchronization` → disparo → cambio de turno → `player_died` → `game_stats` + `endGame` |
-| `lobby.test.js` | Tienda (armas, accesorios), mascotas (comprar, cambiar, borrar, modificar), ruleta, popups, armas equipadas y salas con nombre |
+| `characterization.test.ts` | Política de Flash, ladder, login, mensajes inválidos y una partida completa: `quick_play` → entrar → `startGame` → movimiento, chat, apuntar, `on_ready`, `synchronization` → disparo → cambio de turno → `player_died` → `game_stats` + `endGame` |
+| `lobby.test.ts` | Tienda (armas, accesorios), mascotas (comprar, cambiar, borrar, modificar), ruleta, popups, armas equipadas y salas con nombre |
 
 Rutas relativas a `apps/server/test/`.
 
@@ -41,8 +41,8 @@ Rutas relativas a `apps/server/test/`.
 
 | Archivo | Qué es |
 |---|---|
-| `helpers/server.js` | Arranca Mongo + assets + servidor; da `connect`, `login`, `waitForUser` |
-| `helpers/client.js` | Cliente de prueba: `send`, `next(command)` (espera un mensaje) y `request(msg)` (devuelve todo lo que respondió el servidor) |
+| `helpers/server.ts` | Arranca Mongo + assets + servidor; da `connect`, `login`, `waitForUser` |
+| `helpers/client.ts` | Cliente de prueba: `send`, `next(command)` (espera un mensaje) y `request(msg)` (devuelve todo lo que respondió el servidor) |
 | `fixtures/assets/*.dat` | Datos de juego mínimos e inventados |
 
 ## Depurar

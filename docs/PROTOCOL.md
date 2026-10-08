@@ -1,6 +1,6 @@
 # Protocolo cliente ↔ servidor
 
-Sacado del código actual (`handler.js`, `slot.js`, `wol.js`, `client/*.js`). Todo lo que aparece aquí se
+Sacado del código actual (`handler/`, `slot/`, `wol/`, `client/`). Todo lo que aparece aquí se
 puede verificar en esos archivos. Lo que hacía el **cliente** Flash con cada mensaje no está en este repo; se
 marca como *desconocido* cuando importa.
 
