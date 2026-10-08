@@ -1,0 +1,9 @@
+{
+  "gameHeight": 1400,
+  "gameTimes": [1, 4, 8],
+  "turnTimes": [10, 15, 20],
+  "maxPlayers": [2, 4, 6],
+  "maxSlots": 10,
+  "petMainColors": [],
+  "petDetailColors": []
+}
