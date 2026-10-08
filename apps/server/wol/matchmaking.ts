@@ -17,13 +17,13 @@ function isOccupied(slot: Slot): boolean {
 
 /** Cambia por uno al azar cada valor no permitido por Config, y el mapa inexistente por "Sink or Swim" */
 export function validateMapDetails<D extends MapDetails>(wol: WOL, client: LobbyClient, data: D): D {
-  if (wol.config.turnTimes.indexOf(data.turnDuration) < 0) data.turnDuration = pickRandom(wol.config.turnTimes);
+  if (wol.config.turnTimes.indexOf(data.turnDuration as number) < 0) data.turnDuration = pickRandom(wol.config.turnTimes);
 
-  if (wol.config.gameTimes.indexOf(data.gameDuration) < 0) data.gameDuration = pickRandom(wol.config.gameTimes);
+  if (wol.config.gameTimes.indexOf(data.gameDuration as number) < 0) data.gameDuration = pickRandom(wol.config.gameTimes);
 
-  if (wol.config.maxPlayers.indexOf(data.playerCount) < 0) data.playerCount = pickRandom(wol.config.maxPlayers);
+  if (wol.config.maxPlayers.indexOf(data.playerCount as number) < 0) data.playerCount = pickRandom(wol.config.maxPlayers);
 
-  if (!wol.mapsObj[data.mapName]) {
+  if (!wol.mapsObj[data.mapName as string]) {
     // (el original tenía un if por xp > 20557 con las dos ramas iguales)
     data.mapName = wol.mapsObj["Sink or Swim"].name;
   }
@@ -66,12 +66,12 @@ export function findSlot(wol: WOL, mapDetails: MapDetails, customName: string | 
   )
     return 0;
 
-  if (!wol.mapsObj[mapDetails.mapName]) return 0;
-  if (wol.config.gameTimes.indexOf(mapDetails.gameDuration) < 0) return 0;
-  if (wol.config.turnTimes.indexOf(mapDetails.turnDuration) < 0) return 0;
-  if (wol.config.maxPlayers.indexOf(mapDetails.playerCount) < 0) return 0;
+  if (!wol.mapsObj[mapDetails.mapName as string]) return 0;
+  if (wol.config.gameTimes.indexOf(mapDetails.gameDuration as number) < 0) return 0;
+  if (wol.config.turnTimes.indexOf(mapDetails.turnDuration as number) < 0) return 0;
+  if (wol.config.maxPlayers.indexOf(mapDetails.playerCount as number) < 0) return 0;
 
-  const mapName = mapDetails.mapName;
+  const mapName = mapDetails.mapName as string;
   const playerCount = parseInt(String(mapDetails.playerCount));
   const gameDuration = parseInt(String(mapDetails.gameDuration)) * 60 * 1000;
   const turnDuration = parseInt(String(mapDetails.turnDuration)) * 1000;
@@ -83,7 +83,7 @@ export function findSlot(wol: WOL, mapDetails: MapDetails, customName: string | 
 
     if (wol.slots[gameId]) {
       // bug: usa tmpId (undefined) en vez de gameId, lanza TypeError (ver docs/BUGS.md)
-      if (isOccupied(wol.slots[tmpId])) {
+      if (isOccupied(wol.slots[tmpId as string])) {
         return 0;
       }
     } else {

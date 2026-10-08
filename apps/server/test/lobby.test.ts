@@ -2,10 +2,11 @@
 // Fijan el comportamiento de HOY, bugs incluidos (marcados con "bug:"). Ver docs/TESTS.md.
 import { test, before, after } from "node:test";
 import assert = require("node:assert/strict");
-import { startTestServer, user, sleep } from "./helpers/server";
+import { startTestServer, user, sleep, type TestEnv } from "./helpers/server";
+import type { Message, TestClient } from "./helpers/client";
 
-let env, caro;
-const last = (responses) => responses.filter((m) => m.command === "player").at(-1);
+let env: TestEnv, caro: TestClient;
+const last = (responses: Message[]) => responses.filter((m) => m.command === "player").at(-1)!;
 
 before(async () => {
   env = await startTestServer([user(10, "Caro", { nw: 0 }), user(11, "Dani"), user(12, "Eva")]);
@@ -103,7 +104,7 @@ test("set_weapons_equipped", async () => {
 
 test("chance_wheel cobra 2 treats y da un arma", async () => {
   const r = await caro.request({ command: "chance_wheel" });
-  const wheel = r.find((m) => m.command === "chance_wheel_return");
+  const wheel = r.find((m) => m.command === "chance_wheel_return")!;
   const [[weapon, amount]] = Object.entries(wheel.value.reward as Record<string, number>);
   assert.ok(["teleport", "grappling", "grenade", "flamethrower", "goo", "mirv", "drill", "lasercannon"].includes(weapon));
   assert.ok(amount >= 1);
@@ -112,7 +113,7 @@ test("chance_wheel cobra 2 treats y da un arma", async () => {
 });
 
 test("salas con nombre: game_name_check, create_game y join_game", async () => {
-  const check = (name) => caro.request({ command: "game_name_check", name });
+  const check = (name: string) => caro.request({ command: "game_name_check", name });
   assert.deepEqual(await check("Sala 1"), [{ command: "game_name_return", name: "Sala 1", value: 1 }]);
   assert.deepEqual(await check("Sala!"), []); // caracteres no permitidos: nada
 

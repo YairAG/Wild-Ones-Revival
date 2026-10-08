@@ -14,7 +14,7 @@ export function handleLogin(client: LobbyClient | GameClient, data: Msg<LobbyMes
     return;
   }
   client.db.count({ dname: data.dname, lkey: data.snum }, function (n) {
-    if (n > 0) {
+    if (n !== undefined && n > 0) {
       client.db.fetch({ dname: data.dname, lkey: data.snum }, function (doc) {
         if (!doc) return;
         console.log(">> Logged in successfully as " + doc.dname);
@@ -41,7 +41,7 @@ export function handleStartServerConnect(client: GameClient, data: Msg<GameMessa
   //what happens if i connect after the slot is full!?
   if (!client) return;
   client.db.count({ dname: data.userId, gkey: client.gameSession }, function (n) {
-    if (n > 0) {
+    if (n !== undefined && n > 0) {
       client.db.fetch({ dname: data.userId, gkey: client.gameSession }, function (doc) {
         if (!doc) return;
         console.log(">>>[game] Successfully logged in");

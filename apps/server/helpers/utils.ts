@@ -40,7 +40,7 @@ Utils.bin2String = function (array: string[]): string {
 };
 
 // Inverso de intToString. Devuelve 0 si str está vacío y -1 si no tiene 16 caracteres
-Utils.stringToInt = function (str: string): number {
+Utils.stringToInt = function (str: string | undefined): number {
   if (!str) return 0;
 
   if (str.length != 16) {

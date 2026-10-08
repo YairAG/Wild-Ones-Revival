@@ -66,7 +66,7 @@ class TestClient {
 
   // Envía un mensaje y devuelve todo lo que respondió el servidor. Manda detrás un ping de control:
   // el servidor atiende en orden, así que al llegar el ping_ack ya respondió al mensaje.
-  async request(message: { command: string }): Promise<Message[]> {
+  async request(message: { command: string; [key: string]: unknown }): Promise<Message[]> {
     this.messages.length = 0;
     this.send(message);
     this.send({ command: "ping" });

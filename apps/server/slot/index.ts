@@ -166,7 +166,7 @@ class Slot {
             this.sendConfirmation();
             this.startGame();
             //handle timeout
-            clearTimeout(this.startingTimeout);
+            clearTimeout(this.startingTimeout ?? undefined);
             this.startingTimeout = null;
           }.bind(this),
           5000,
@@ -181,7 +181,7 @@ class Slot {
         //handle timeout
         if (this.startingTimeout) {
           console.log("clearing timeout!");
-          clearTimeout(this.startingTimeout);
+          clearTimeout(this.startingTimeout ?? undefined);
           this.startingTimeout = null;
         }
         //refresh
@@ -210,7 +210,7 @@ class Slot {
 
   stopGameStart(): void {
     console.log("stopping game!");
-    clearTimeout(this.startingTimeout);
+    clearTimeout(this.startingTimeout ?? undefined);
     this.startingTimeout = null;
     this.updateGameStatus("idle");
     this.refresh();

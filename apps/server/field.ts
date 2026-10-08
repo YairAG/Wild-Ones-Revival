@@ -37,7 +37,7 @@ class Field {
 
   getFieldPointColor(x: number, y: number): number {
     try {
-      return this.bitmapData.getPixelColor(x, y);
+      return this.bitmapData!.getPixelColor(x, y); // undefined: lanza y devuelve 0
     } catch {
       return 0;
     }

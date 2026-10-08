@@ -4,7 +4,7 @@ import { spawn } from "child_process";
 import { once } from "events";
 import path = require("path");
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { MongoClient } from "mongodb";
+import { MongoClient, type Document } from "mongodb";
 import serveAssets = require("../../scripts/serve-assets");
 import { TestClient, sleep } from "./client";
 
@@ -12,7 +12,7 @@ const ROOT = path.join(__dirname, "../..");
 const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
 
 /** Documento de jugador de prueba (clave = "clave-<dname>") */
-function user(id, dname, extra = {}) {
+function user(id: number, dname: string, extra: object = {}) {
   return {
     id, dname, lkey: "clave-" + dname,
     nw: -1, level: 0, xp: 0, gold: 1000, treats: 200, status: "playing",
@@ -24,7 +24,7 @@ function user(id, dname, extra = {}) {
   };
 }
 
-async function startTestServer(users) {
+async function startTestServer(users: Document[]) {
   const port = 18000 + Math.floor(Math.random() * 1000); // aleatorio: evita choques con procesos viejos
   const mongod = await MongoMemoryServer.create({ binary: { version: MONGO_VERSION } });
   const mongoUrl = mongod.getUri().replace(/\/?$/, "/emu");
@@ -54,13 +54,13 @@ async function startTestServer(users) {
     await sleep(50);
   }
 
-  const clients = [];
+  const clients: TestClient[] = [];
   return {
     port,
     db,
     log: () => log,
 
-    async connect(urlPath) {
+    async connect(urlPath: string) {
       const c = new TestClient(port, urlPath);
       await c.connect();
       clients.push(c);
@@ -68,7 +68,7 @@ async function startTestServer(users) {
     },
 
     // Abre lobby y hace login; devuelve el cliente ya sin los mensajes del login
-    async login(dname) {
+    async login(dname: string) {
       const c = await this.connect("/ballistic/lobby?session=x");
       c.send({ command: "logIn", dname, snum: "clave-" + dname });
       await c.next("player");
@@ -76,10 +76,10 @@ async function startTestServer(users) {
     },
 
     // Espera a que una condición sobre Mongo se cumpla (el servidor guarda sin esperar respuesta)
-    async waitForUser(dname, check) {
+    async waitForUser(dname: string, check: (doc: Document) => boolean) {
       for (let i = 0; i < 50; i++) {
         const doc = await db.collection("users").findOne({ dname });
-        if (check(doc)) return doc;
+        if (doc && check(doc)) return doc;
         await sleep(20);
       }
       throw new Error("Mongo no se actualizó para " + dname);
@@ -96,4 +96,7 @@ async function startTestServer(users) {
   };
 }
 
+type TestEnv = Awaited<ReturnType<typeof startTestServer>>;
+
 export { startTestServer, user, sleep };
+export type { TestEnv };

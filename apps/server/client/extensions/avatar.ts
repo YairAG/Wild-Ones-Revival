@@ -53,7 +53,7 @@ class Avatar extends Physical {
   declare angle: number;
   declare isFacingRight: boolean;
   declare walkAcceleration: number;
-  declare jumpDirection: string;
+  declare jumpDirection: string | undefined;
   declare maxFPDistance: number;
   declare fpDistance: number;
   declare dead: boolean;
@@ -294,7 +294,7 @@ class Avatar extends Physical {
           const _local25 = this.Vy - _local23;
           let _local26 = 0;
           if (this.climbing) {
-            if (averageHitG.nP > 0) {
+            if (averageHitG!.nP > 0) {
               // @ts-expect-error bug: Va sin this. (ver docs/BUGS.md)
               _local26 = _local21 + r * Va * this.climbProperties.Vmax;
             }

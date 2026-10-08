@@ -7,6 +7,8 @@ import Mortar = require("./mortar.js");
 import type WeaponProperties = require("../properties/weapon.properties.js");
 import type Slot = require("../slot");
 
+type MortarConstructor = new (...args: Parameters<typeof Mortar>) => Mortar;
+
 class Weapon {
   declare slot: Slot;
 
@@ -21,7 +23,8 @@ class Weapon {
       case "meganuke":
       case "gonuke":
       case "babynuke":
-        return new Mortar(properties, x, y, vx, vy, this.slot);
+        // Mortar es una función-constructor (ver mortar.ts); TypeScript necesita que se lo indiquen
+        return new (Mortar as unknown as MortarConstructor)(properties, x, y, vx, vy, this.slot);
     }
   }
 }

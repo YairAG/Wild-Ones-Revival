@@ -9,6 +9,7 @@
     "dev": "tsx watch --env-file-if-exists=.env app.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
+    "start:dist": "node --env-file-if-exists=.env dist/app.js",
     "assets": "tsx scripts/serve-assets.ts",
     "test": "node --import tsx --test \"test/**/*.test.ts\""
   },

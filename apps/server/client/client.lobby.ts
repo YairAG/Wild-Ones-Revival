@@ -20,7 +20,7 @@ class LobbyClient {
   declare id: string;
   declare loggedIn: boolean;
   declare player: Player;
-  declare gameId: string | null;
+  declare gameId: string | null | undefined;
   declare gameSession: string;
 
   constructor(clientRef: Client) {

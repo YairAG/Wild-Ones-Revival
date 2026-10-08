@@ -180,12 +180,12 @@ class WOL {
     this.slots[gameId] = new Slot(this, gameId, mapName, playerCount, gameDuration, turnDuration);
   }
 
-  getJoinCommand(gameId: string) {
-    return this.slots[gameId].getString("join");
+  getJoinCommand(gameId: string | null | undefined) {
+    return this.slots[gameId as string].getString("join");
   }
 
-  getGame(gameId: string): Slot {
-    return this.slots[gameId];
+  getGame(gameId: string | null | undefined): Slot {
+    return this.slots[gameId as string];
   }
 
   // Un GameClient cambió los datos del jugador: actualiza la copia de su conexión de lobby

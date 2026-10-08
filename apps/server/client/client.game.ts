@@ -26,7 +26,7 @@ class GameClient {
   declare shotThisTurn: boolean;
   declare startingXP: number;
   declare startingGold: number;
-  declare gameId: string | null;
+  declare gameId: string | null | undefined;
   declare gameSession: string;
   declare disconnected?: boolean; // nunca se asigna
 

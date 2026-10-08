@@ -4,11 +4,13 @@ import { test, before, after } from "node:test";
 import assert = require("node:assert/strict");
 import { once } from "events";
 import net = require("net");
-import { startTestServer, user, sleep } from "./helpers/server";
+import { startTestServer, user, sleep, type TestEnv } from "./helpers/server";
+import type { Document } from "mongodb";
+import type { Message, TestClient } from "./helpers/client";
 
-let env;
-const connect = (urlPath) => env.connect(urlPath);
-const waitForUser = (dname, check) => env.waitForUser(dname, check);
+let env: TestEnv;
+const connect = (urlPath: string) => env.connect(urlPath);
+const waitForUser = (dname: string, check: (doc: Document) => boolean) => env.waitForUser(dname, check);
 
 before(async () => {
   env = await startTestServer([user(1, "Ana"), user(2, "Beto")]);
@@ -54,7 +56,7 @@ test("mensajes inválidos se descartan y se loguean; el servidor sigue respondie
 test("partida completa: login → quick_play → 2 jugadores → turno → game over", async (t) => {
   const lobbyA = await connect("/ballistic/lobby?session=x");
   const lobbyB = await connect("/ballistic/lobby?session=x");
-  let gameA, gameB, joinA, joinB;
+  let gameA: TestClient, gameB: TestClient, joinA: Message, joinB: Message;
 
   await t.test("login en lobby devuelve setPlayer y luego player", async () => {
     lobbyA.send({ command: "logIn", dname: "Ana", snum: "clave-Ana" });
@@ -120,7 +122,7 @@ test("partida completa: login → quick_play → 2 jugadores → turno → game 
       { id: 1, x: 100, y: 100 },
       { id: 2, x: 300, y: 100 },
     ]);
-    assert.deepEqual(start.playerlist.map((p) => p.dname), ["Ana", "Beto"]);
+    assert.deepEqual(start.playerlist.map((p: Message) => p.dname), ["Ana", "Beto"]);
   });
 
   await t.test("solo se reenvían las acciones del jugador en turno", async () => {
@@ -145,7 +147,7 @@ test("partida completa: login → quick_play → 2 jugadores → turno → game 
     // on_ready: marca al jugador como "ready" y manda "game" a todos
     gameB.send({ command: "on_ready" });
     const game = await gameA.next("game");
-    assert.deepEqual(game.players.find((p) => p.guid === 2), { guid: 2, status: "ready" });
+    assert.deepEqual(game.players.find((p: Message) => p.guid === 2), { guid: 2, status: "ready" });
 
     // synchronization: el servidor lo transforma en set_synch y lo manda a todos (incluido quien lo envió)
     const hp500 = "407F400000000000"; // 500 codificado en hex (ver PROTOCOL.md, números codificados)
