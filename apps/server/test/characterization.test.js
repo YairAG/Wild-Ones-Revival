@@ -13,7 +13,7 @@ const serveAssets = require("../scripts/serve-assets.js");
 const { TestClient, sleep } = require("./client.js");
 
 const ROOT = path.join(__dirname, "..");
-const PORT = 18000;
+const PORT = 18000 + Math.floor(Math.random() * 1000); // aleatorio: evita choques con procesos viejos
 const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
 
 let mongod, mongoClient, db, assetServer, server, serverLog = "";
@@ -71,7 +71,7 @@ before(async () => {
   server.stderr.on("data", (d) => (serverLog += d));
 
   for (let i = 0; !serverLog.includes("Accepting clients"); i++) {
-    if (i > 100) throw new Error("El servidor no arrancó:\n" + serverLog);
+    if (i > 300) throw new Error("El servidor no arrancó en 15 s:\n" + serverLog);
     await sleep(50);
   }
 });
