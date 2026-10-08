@@ -246,6 +246,9 @@ function suite(transport: Transport) {
         assert.equal(stats.place, 0);
         await g.next("endGame");
       }
+      // Ana (viva) suma una victoria; Beto (muerto), una derrota. Los dos, una partida
+      await waitForUser("Ana", (d) => d.wins == 1 && d.losses == 0 && d.gamecount == 1);
+      await waitForUser("Beto", (d) => d.wins == 0 && d.losses == 1 && d.gamecount == 1);
     });
   });
 }

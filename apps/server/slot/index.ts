@@ -462,6 +462,15 @@ class Slot {
       }
     }
 
+    // Estadísticas del jugador: todos suman una partida, gana el único vivo y pierden los muertos. Si se acabó el
+    // tiempo con varios vivos, esos empatan (ni ganan ni pierden). Quien salió antes ya no está en clients
+    for (const client of Object.values(this.clients)) {
+      client.player.gamecount += 1;
+      if (client.isDead()) client.player.losses += 1;
+      else if (alive.length == 1) client.player.wins += 1;
+      client.updatePlayerData();
+    }
+
     for (const key in this.clients) {
       this.clients[key].sendGameStats(playerOrder);
     }

@@ -22,7 +22,7 @@ const JWT_SECRET = "secreto-de-los-tests";
 function user(id: number, dname: string, extra: object = {}) {
   return {
     id, dname,
-    nw: -1, level: 0, xp: 0, gold: 1000, treats: 200, status: "playing",
+    nw: -1, level: 0, xp: 0, gold: 1000, treats: 200, status: "playing", wins: 0, losses: 0, gamecount: 0,
     currentPet: "1",
     ownedPets: { 1: { id: 1, name: "Rex", type: "dog", accessories: [] } },
     userWeaponsOwned: {}, userWeaponsEquipped: ["walk", "mortar"],
