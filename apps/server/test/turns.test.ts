@@ -1,4 +1,4 @@
-// Muertes: quién puede reportarlas y cómo se cuentan. Partidas de 3 jugadores.
+// Turnos y muertes: quién puede terminar un turno o reportar una muerte, y cómo se cuentan. Partidas de 3.
 import { describe, test, before, after } from "node:test";
 import assert = require("node:assert/strict");
 import { startTestServer, user, sleep, TRANSPORTS, type TestEnv } from "./helpers/server";
@@ -31,6 +31,19 @@ function suite(transport: Transport) {
     for (const game of games) await game.next("startGame", 8000);
     return games;
   }
+
+  test("turn_complete del jugador en turno termina su turno; el de otro se ignora", async () => {
+    const [ana, beto] = await startGame(); // turno de Ana (el turno dura 10 s + 2 s)
+
+    beto.send({ command: "turn_complete" }); // no es su turno
+    await sleep(500);
+    assert.ok(!ana.messages.some((m) => m.command === "changeTurn"));
+
+    ana.send({ command: "turn_complete" });
+    const turn = await ana.next("changeTurn", 1000); // llega en el siguiente tick, no a los 12 s
+    assert.equal(turn.currentPlayer, "2");
+    await beto.next("set_tick"); // al que empieza turno
+  });
 
   test("reportar dos veces la misma muerte cuenta una sola vez", async () => {
     const [ana] = await startGame();

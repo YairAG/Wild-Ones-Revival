@@ -74,12 +74,11 @@ export function handleMoveStop(client: GameClient, data: Msg<"move_stop">): void
   client.getGame().sendPacketE(data, client);
 }
 
-// bug: no hace nada; el turno solo cambia por tiempo o tras un projectile (ver docs/BUGS.md)
+// El jugador en turno da su turno por terminado: el cambio llega en el siguiente tick.
+// setNextTurnFN solo acorta el turno; se usa 1 y no 0 porque turnEndTick = 0 significa "sin turno".
 export function handleTurnComplete(client: GameClient): void {
-  if (!canAct(client)) {
-    //sneaky bastard
-    return;
-  }
+  if (!canAct(client)) return;
+  client.getGame().setNextTurnFN(1);
 }
 
 // Arma un mensaje "position" pero no lo envía (el envío está comentado en el original)

@@ -41,7 +41,7 @@ cada uno se corrige después en su propio commit.
   dos accesorios de la misma categoría.
 - `projectile` resta munición aunque el jugador no tenga ese arma (`mortar` es gratis): `undefined - 1 = NaN`,
   que se guarda en Mongo y viaja como `null`. Fijado en los tests.
-- `turn_complete` no hace nada: el turno solo cambia por tiempo o tras un `projectile`.
+- ~~`turn_complete` no hacía nada~~ (arreglado): ahora el jugador en turno puede terminar su turno.
 - `gameDuration` no se aplica: la partida no tiene límite de tiempo.
 - Premios de fin de partida solo con más de 2 jugadores; `game_stats` siempre va en 0.
 - `sendTick` reenvía el último `synch_check` del jugador activo pero sobrescribe `tick` con el tick del servidor.

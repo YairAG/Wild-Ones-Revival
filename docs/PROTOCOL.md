@@ -279,7 +279,7 @@ Si alguien sale durante `starting`, vuelve a `idle`.
      Se le desbloquea y se le permite disparar de nuevo.
   3. A todos: registro `changeTurn` (2.3).
 - Siguiente jugador: el siguiente `id` mayor que esté vivo; si no hay, el menor.
-- `turn_complete` **no** cambia el turno.
+- `turn_complete` del jugador en turno termina su turno en el siguiente tick (máximo 100 ms).
 - `gameDuration` no se aplica.
 
 ### 5.4 C→S durante la partida
@@ -299,7 +299,7 @@ Si alguien sale durante `starting`, vuelve a `idle`.
 | `cancel_fire`, `equip`, `toggle_weapon` | — | sí | Reenvía a los demás |
 | `retract_rope`, `release_rope`, `stop_rope`, `detach`, `teleport_stop` | — | sí | Reenvía a los demás |
 | `projectile` | `{"d":[x,y],"ammo_type":"grenade","crate":"false"}` | sí (no mira lock) | Ver abajo |
-| `turn_complete` | — | — | Se ignora |
+| `turn_complete` | — | sí | Termina el turno en el siguiente tick |
 | `position` | `{"x","y","tick"}` | — | Se ignora |
 | `request_synch` | — | — | Solo loguea |
 | `synch_pts` | `{"value":"<hex>"}` | — | Se ignora |
