@@ -5,7 +5,9 @@
   "description": "Servidor de juego Wild Ones (lobby, partidas, turnos). Basado en Wild Ones Private Wars / Wild Ones Latin.",
   "main": "app.js",
   "scripts": {
-    "start": "node --env-file-if-exists=.env app.js"
+    "start": "node --env-file-if-exists=.env app.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "engines": {
     "node": ">=22.9"
@@ -16,5 +18,11 @@
     "mongodb": "2.2.33",
     "node-uuid": "^1.4.8",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9"
   }
 }
