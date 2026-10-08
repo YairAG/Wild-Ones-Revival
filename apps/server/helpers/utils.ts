@@ -1,4 +1,4 @@
-import md5 = require("md5");
+import { createHash } from "crypto";
 
 function Utils() {}
 
@@ -76,7 +76,7 @@ Utils.randInt = function (): number {
 };
 
 Utils.md5 = function (str: string): string {
-  return md5(str);
+  return createHash("md5").update(str).digest("hex");
 };
 
 export = Utils;

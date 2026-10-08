@@ -15,7 +15,6 @@
   "dependencies": {
     "@wildones/protocol": "workspace:*",
     "jimp": "0.2.28",
-    "md5": "^2.2.1",
     "mongodb": "7.7.0",
     "request": "^2.88.2"
   },
