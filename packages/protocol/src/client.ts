@@ -86,6 +86,8 @@ export const gameMessage = z.discriminatedUnion("command", [
   msg("player_died", { id: id }),
   msg("exiting"),
   msg("log_projectile", { weapon: z.string() }),
+  // El SWF lo manda al hacer daño ({to, from, value, died}); el servidor original no lo procesa
+  msg("damage"),
 ]);
 
 export type LobbyMessage = z.infer<typeof lobbyMessage>;

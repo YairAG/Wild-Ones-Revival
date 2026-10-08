@@ -310,6 +310,7 @@ Si alguien sale durante `starting`, vuelve a `idle`.
 | `player_died` | `{"id":142604}` | sí (sin lock) | Marca a ese jugador como muerto. Si no lo envía el jugador en turno, se ignora (`warn` en el log). Una muerte repetida no se cuenta dos veces |
 | `exiting` | — | no | Reenvía a los demás |
 | `log_projectile` | `{"weapon","x","y","vx","vy"}` | no | Escribe en `logs/<weapon>_xy.txt` y `_vxvy.txt` |
+| `damage` | `{"to":"2","from":"1","value":"390","died":"false"}` | — | Se ignora (el SWF lo manda al hacer daño; el original no lo procesaba) |
 | `logIn` | — | — | Roto (ver BUGS) |
 | `give_medal` | — | — | Roto (ver BUGS) |
 
