@@ -60,8 +60,7 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 | `properties/*.js` | Plantillas con valores por defecto para armas, mapas, mascotas, accesorios y comida. Se rellenan con los `.dat`. |
 | `helpers/utils.js` | Utilidades: codificar números como texto hex, generar claves aleatorias, md5. |
 | `helpers/logger.js` | Escribe logs a archivo (está roto, ver BUGS). |
-| `helpers/point.js`, `physics/`, `weapons/`, `field.js`, `misc/` | Física del lado servidor **a medio hacer y desactivada**. |
-| `crumbs/config.json` | No lo usa nadie. La config real viene de `Config.dat`. |
+| `helpers/point`, `physics/`, `weapons/`, `field.js` | Física del lado servidor **a medio hacer y desactivada**. |
 | `user-schema.example.json` | Ejemplo del documento de jugador que espera Mongo. |
 
 ## Datos del juego (assets)

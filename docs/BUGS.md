@@ -54,4 +54,4 @@ cada uno se corrige después en su propio commit.
     resta un número a la partida (`getGame() - superJumpTick`), `monkeyClimb()` sin implementar, y el setter
     `climbing` escribe en `_climing` (typo), así que nunca cambia.
   - `physical.ts`: `onFrame()` usa `A` sin `this.`.
-- `client/extensions/avatar_old.js`, `misc/field/field.js`, `crumbs/config.json` (no lo lee nadie).
+- (Borrados por no usarse: `client/extensions/avatar_old.js`, `misc/field/field.js`, `crumbs/config.json`.)
