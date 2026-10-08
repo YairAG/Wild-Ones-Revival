@@ -1,5 +1,5 @@
 // Conexión de lobby: login, tienda (oro/treats, armas, mascotas, accesorios) y buscar partida
-import Utils = require("../helpers/utils.js");
+import { randomUUID } from "crypto";
 import type Client = require("./client.abstract.js");
 import type Database = require("../database.js");
 import type WOL = require("../wol");
@@ -187,7 +187,8 @@ class LobbyClient {
   // ### keygen(s) ###
 
   generateGameKey(): string {
-    this.gameSession = this.updateGameKey(Utils.randKey());
+    // Pase de un solo jugador para entrar a la partida (ver handler/auth.ts). UUID: 122 bits aleatorios seguros
+    this.gameSession = this.updateGameKey(randomUUID());
     return this.gameSession;
   }
 

@@ -68,10 +68,6 @@ Utils.stringToInt = function (str: string | undefined): number {
   return bytes.readDoubleBE(0);
 };
 
-Utils.randKey = function (): string {
-  return Math.random().toString(36).substring(7);
-};
-
 Utils.randInt = function (): number {
   return parseInt(String(Math.random() * 1000));
 };

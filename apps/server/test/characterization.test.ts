@@ -128,6 +128,7 @@ function suite(transport: Transport) {
       assert.equal(joinA.playerCount, 0); // todavía nadie entró por la conexión game
       assert.equal(joinA.turnDuration, 10000);
       assert.notEqual(joinA.session, joinB.session);
+      assert.match(joinA.session, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/); // UUID v4
 
       // La session se guarda en Mongo como gkey (la usa start_server_connect)
       await waitForUser("Ana", (u) => u.gkey === joinA.session);
