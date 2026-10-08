@@ -11,6 +11,8 @@ cada uno se corrige después en su propio commit.
 - **`snum` se reparte a otros jugadores**: `setupPlayer` copia `doc.snum` al objeto `player`, que se envía a
   todos en la partida (`sendGamePlayers`, `sendToGame`, `playerlist` de `startGame`).
 - **`player_died` sin validar**: cualquier jugador puede mandar `{"command":"player_died","id":X}` y matar a otro.
+- **`packet.hasOwnProperty(...)` en `slot.sendPacket/sendPacketE`**: un mensaje reenviado con un campo
+  llamado `hasOwnProperty` hace fallar el reenvío (se pierde para todos).
 - **`chat` sin filtro**: se reenvía el objeto tal cual, con cualquier campo que mande el cliente.
 - **`gkey` débil**: la clave de partida es `Math.random().toString(36).substring(7)` (~5-6 caracteres).
 - **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command`, `online` y `snum`.
