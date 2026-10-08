@@ -10,6 +10,8 @@ cada uno se corrige después en su propio commit.
 - **Credenciales en logs**: `handleLogin` escribe `snum` en texto plano en `logs/glogin_log.txt` junto a la IP.
 - **`snum` se reparte a otros jugadores**: `setupPlayer` copia `doc.snum` al objeto `player`, que se envía a
   todos en la partida (`sendGamePlayers`, `sendToGame`, `playerlist` de `startGame`).
+- **`player_died` sin validar**: cualquier jugador puede mandar `{"command":"player_died","id":X}` y matar a otro.
+- **`chat` sin filtro**: se reenvía el objeto tal cual, con cualquier campo que mande el cliente.
 - **`gkey` débil**: la clave de partida es `Math.random().toString(36).substring(7)` (~5-6 caracteres).
 - **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command`, `online` y `snum`.
 
@@ -19,6 +21,8 @@ cada uno se corrige después en su propio commit.
 - `helpers/logger.js`: usa `fs` sin importarlo.
 - `wol.js` `findSlot` con nombre propio: usa `tmpId` sin definir si el nombre ya existe.
 - `logIn` en una conexión `game` llama a `sendPlayerSetup`, que `GameClient` no tiene.
+- `give_medal` llama a `handleSendMedal`, que no existe.
+- `join_game` mete al cliente de **lobby** en la partida (`gameRef.addClient(client)`), aunque no tiene avatar.
 
 ## Lógica
 
