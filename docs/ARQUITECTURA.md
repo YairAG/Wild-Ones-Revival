@@ -15,7 +15,19 @@ El juego original (Flash) hacía casi todo en el cliente: física, disparos, da�
 4. En la partida: decide de quién es el turno, lleva el reloj y **reenvía** las acciones del jugador en turno
    a los demás. Cada cliente simula el juego por su cuenta con la misma semilla aleatoria ("lockstep").
 
-## Archivos
+## Estructura del repo
+
+Es un **workspace de pnpm**: un repo con varios paquetes que comparten `node_modules` y se manejan desde la raíz.
+
+| Carpeta | Qué es |
+|---|---|
+| `apps/server/` | El servidor de juego (paquete `@wildones/server`). |
+| `packages/protocol/` | Tipos y validación de los mensajes, compartibles con el frontend (paquete `@wildones/protocol`). |
+| `docs/` | Toda la documentación. |
+
+Los comandos (`pnpm start`, `pnpm test`, …) se corren desde la raíz.
+
+## Archivos del servidor (`apps/server/`)
 
 | Archivo | Qué hace |
 |---|---|
@@ -42,7 +54,7 @@ Al arrancar, `wol.js` descarga por HTTP desde `ASSETS_URL` estos archivos JSON:
 `Config, Accessories, Crate, Gifts, Levels, Maps, Other, PetFoods, Pets, WeaponsGrid` (`.dat`).
 Hasta que no termina, no abre el puerto. Si alguno falla, el servidor no arranca.
 
-Son datos del juego original (Playdom), así que **no están en el repo**: se guardan en `assets/json/`
+Son datos del juego original (Playdom), así que **no están en el repo**: se guardan en `apps/server/assets/json/`
 (ignorado por git). Los tests usan datos inventados.
 
 Lo que realmente se usa:

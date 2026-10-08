@@ -1,31 +1,21 @@
 {
-  "name": "wildones-server",
-  "version": "0.1.0",
+  "name": "wild-ones-revival",
   "private": true,
-  "description": "Servidor de juego Wild Ones (lobby, partidas, turnos). Basado en Wild Ones Private Wars / Wild Ones Latin.",
-  "main": "app.js",
+  "description": "Wild Ones Revival: servidor de juego y protocolo compartido.",
   "scripts": {
-    "start": "node --env-file-if-exists=.env app.js",
-    "assets": "node scripts/serve-assets.js",
-    "test": "node --test \"test/**/*.test.js\"",
+    "start": "pnpm --filter @wildones/server start",
+    "assets": "pnpm --filter @wildones/server assets",
+    "test": "pnpm -r test",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "engines": {
     "node": ">=22.9"
   },
-  "dependencies": {
-    "jimp": "0.2.28",
-    "md5": "^2.2.1",
-    "mongodb": "7.7.0",
-    "node-uuid": "^1.4.8",
-    "request": "^2.88.2"
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
-    "mongodb-memory-server": "^11.3.0",
     "prettier": "^3.9.9"
   }
 }
