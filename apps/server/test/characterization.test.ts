@@ -189,6 +189,9 @@ function suite(transport: Transport) {
       // set_aim: solo del jugador en turno, reenviado a los demás
       gameA.send({ command: "set_aim", value: 1.2, power: 300 });
       assert.deepEqual(await gameB.next("set_aim"), { command: "set_aim", value: 1.2, power: 300 });
+      // el SWF original los manda como texto
+      gameA.send({ command: "set_aim", value: "0.8", power: "1001.37" });
+      assert.deepEqual(await gameB.next("set_aim"), { command: "set_aim", value: "0.8", power: "1001.37" });
 
       // on_ready: marca al jugador como "ready" y manda "game" a todos
       gameB.send({ command: "on_ready" });

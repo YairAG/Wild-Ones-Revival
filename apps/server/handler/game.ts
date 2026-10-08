@@ -94,8 +94,8 @@ export function handlePosition(client: GameClient, data: Msg<"position">): void 
 export function handleSetAim(client: GameClient, data: Msg<"set_aim">): void {
   if (!canAct(client)) return;
 
-  client.avatar.trueGunAngle = data.value;
-  client.avatar.fpDistance = data.power;
+  client.avatar.trueGunAngle = Number(data.value);
+  client.avatar.fpDistance = Number(data.power);
 
   client.getGame().sendPacketE(data, client);
 }

@@ -63,7 +63,8 @@ export const gameMessage = z.discriminatedUnion("command", [
   msg("move_right", { d: point }),
   msg("move_stop", { d: point }),
   msg("move_jump", { d: point, direction: z.string().optional() }),
-  msg("set_aim", { value: z.number(), power: z.number() }),
+  // El SWF original manda ángulo y potencia como texto ("0.80", "1001.37")
+  msg("set_aim", { value: z.union([z.number(), z.string()]), power: z.union([z.number(), z.string()]) }),
   msg("start_fire", { d: point }),
   msg("cancel_fire"),
   msg("equip"),

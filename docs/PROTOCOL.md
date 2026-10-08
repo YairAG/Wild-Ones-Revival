@@ -297,7 +297,7 @@ Si alguien sale durante `starting`, vuelve a `idle`.
 | `synch_check` | `{"tick":..,"synchCheck":".."}` | sí (sin lock) | Lo guarda para el reenvío periódico (5.3) |
 | `move_left` / `move_right` / `move_stop` | `{"d":[x,y]}` | sí | Guarda posición; reenvía a los demás |
 | `move_jump` | `{"d":[x,y],"direction":"up"}` | sí | Guarda posición; reenvía a los demás |
-| `set_aim` | `{"value":<ángulo>,"power":<n>}` | sí | Reenvía a los demás |
+| `set_aim` | `{"value":"<ángulo>","power":"<n>"}` (el SWF los manda como texto; también se aceptan números) | sí | Reenvía a los demás |
 | `start_fire` | `{"d":[x,y]}` | sí | Reenvía a los demás |
 | `cancel_fire`, `equip`, `toggle_weapon` | — | sí | Reenvía a los demás |
 | `retract_rope`, `release_rope`, `stop_rope`, `detach`, `teleport_stop` | — | sí | Reenvía a los demás |
