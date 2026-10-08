@@ -5,6 +5,18 @@ https://github.com/fgpons/wo-latin-ps (commit 4f3e8ad), derivado de https://gith
 (licencia MIT según su encabezado, autor "3.14", 2016). No incluye el sitio web, el cliente SWF ni assets
 de Playdom/Disney.
 
+## Qué hay en este repo
+
+Este repo es **solo el servidor de juego** (open source) y el paquete del protocolo. El frontend y el backend
+de cuentas son proyectos aparte y privados:
+
+| Pieza | Dónde |
+|---|---|
+| Servidor de juego | Este repo, `apps/server` |
+| Protocolo (tipos + validación) | Este repo, `packages/protocol`; publicado en npm como [`wildones-protocol`](https://www.npmjs.com/package/wildones-protocol) |
+| Backend de cuentas (registro, login, JWT) | Privado. Lo que debe cumplir: [docs/CUENTAS.md](docs/CUENTAS.md) |
+| Frontend | Privado. Habla con el servidor según [docs/PROTOCOL.md](docs/PROTOCOL.md) |
+
 ## Arrancar
 
     pnpm install
@@ -23,6 +35,7 @@ Requiere MongoDB 4.4 a 9.0 (probado con 7.0, 8.0 y 9.0.2) y los datos del juego 
 
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): qué hace cada archivo y cómo fluye una partida.
 - [docs/PROTOCOL.md](docs/PROTOCOL.md): todos los mensajes entre cliente y servidor.
+- [docs/CUENTAS.md](docs/CUENTAS.md): contrato con el backend de cuentas (usuario en Mongo, JWT).
 - [docs/TESTS.md](docs/TESTS.md): cómo funcionan los tests.
 - [docs/SIMULACION.md](docs/SIMULACION.md): análisis de dónde debe vivir la simulación (cliente o servidor).
 - [docs/BUGS.md](docs/BUGS.md): bugs conocidos, pendientes de arreglar.

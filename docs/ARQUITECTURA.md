@@ -22,7 +22,7 @@ Es un **workspace de pnpm**: un repo con varios paquetes que comparten `node_mod
 | Carpeta | Qué es |
 |---|---|
 | `apps/server/` | El servidor de juego (paquete `@wildones/server`). |
-| `packages/protocol/` | Tipos y validación de los mensajes, compartibles con el frontend (paquete `wildones-protocol`). |
+| `packages/protocol/` | Tipos y validación de los mensajes. Se publica en npm como `wildones-protocol` para el frontend y el backend de cuentas (repos privados). |
 | `docs/` | Toda la documentación. |
 
 Los comandos (`pnpm start`, `pnpm test`, …) se corren desde la raíz.
