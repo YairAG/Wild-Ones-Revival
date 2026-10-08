@@ -5,6 +5,7 @@ import type Database = require("../database.js");
 import type WOL = require("../wol");
 import type { Player } from "@wildones/protocol";
 import type { GameSocket, UserDoc } from "../types";
+import log = require("../helpers/log.js");
 
 class GameClient {
   declare sock: GameSocket;
@@ -75,7 +76,7 @@ class GameClient {
     this.gameId = null;
     this.gameSession = "";
 
-    console.log(">> Initialized game client");
+    log.debug("Cliente game creado");
   }
 
   // ### initialization functions ###
@@ -114,7 +115,7 @@ class GameClient {
     this.player.dname = doc.dname;
     this.player.command = "player";
     this.player.online = this.WOL.getLobbyLoad();
-    console.log(">> " + this.player.dname + " entered game");
+    log.info({ dname: this.player.dname }, "Entró a la partida");
     this.avatar.initialize();
     return 1;
   }
@@ -274,7 +275,7 @@ class GameClient {
       damage: 0,
       startingXP: 0,
     };
-    console.log("Send game stats!");
+    log.debug({ players: playerOrder }, "Envío game_stats");
     this.sendPacket(statsCmd);
   }
 
@@ -300,7 +301,7 @@ class GameClient {
     try {
       this.sock.write(str);
     } catch (e) {
-      console.log("writing: " + e);
+      log.error({ err: e }, "Error al escribir en el socket");
     }
   }
 

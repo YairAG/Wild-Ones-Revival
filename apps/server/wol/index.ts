@@ -18,10 +18,9 @@ import type PetFoodProperties = require("../properties/pet.food.properties.js");
 import type ChassisProperties = require("../properties/chassis.properties.js");
 import type { Player } from "@wildones/protocol";
 import type { GameConfig, GameSocket } from "../types";
+import log = require("../helpers/log.js");
 
 const gameport = process.env.PORT || 8000;
-
-const DEBUG = true;
 
 type AnyClient = Client | LobbyClient | LadderClient | GameClient;
 
@@ -112,20 +111,18 @@ class WOL {
 
   // Client handling
   run(): void {
-    console.log(">> Accepting clients on " + gameport);
+    log.info({ port: gameport }, "Aceptando clientes");
 
     net
       .createServer((rawSocket) => {
         const socket = rawSocket as GameSocket;
         socket.name = socket.remoteAddress + ":" + socket.remotePort;
         socket.id = randomUUID();
-        console.log("generated socket id: " + socket.id);
         // Empieza como Client genérico; al llegar el POST, handler.js lo cambia por el de su tipo
         let obj: AnyClient = new Client(socket, this.db, this);
-        if (DEBUG) console.log(">> CLIENT " + socket.name + " " + obj.id);
+        log.debug({ socket: socket.name, id: socket.id }, "Nueva conexión");
         //### scope handler ###
         (obj as Client).eventTrigger.on("newScope", function () {
-          if (DEBUG) console.log(">>> New object was assigned");
           obj = (obj as Client).newObject as AnyClient;
         });
         //### data handler ###
@@ -133,12 +130,12 @@ class WOL {
           try {
             this.packetHandler.handle(obj, data);
           } catch (e) {
-            if (DEBUG) console.log("!! Data error: " + e);
+            log.error({ err: e }, "Error al procesar datos");
           }
         });
         //### error handler ###
         socket.on("error", function (e) {
-          if (DEBUG) console.log("!! Sock error: " + e);
+          log.warn({ err: e }, "Error de socket");
         });
 
         //### disconnection handler ###
@@ -206,13 +203,13 @@ class WOL {
   //### add / remove client ###
 
   addClient(obj: AnyClient): void {
-    console.log("adding client UUID: " + obj.sock.id);
+    log.debug({ id: obj.sock.id, type: obj.connectionType }, "Cliente registrado");
     if (obj.connectionType == "lobby") this.lobbyClients[obj.sock.id] = obj as LobbyClient;
     else if (obj.connectionType == "ladder") this.ladderClients[obj.sock.id] = obj as LadderClient;
   }
 
   removeClientObj(obj: AnyClient): void {
-    console.log(">> disconnectClient was called");
+    log.debug({ id: obj.sock.id, type: obj.connectionType }, "Desconexión");
 
     if (obj.connectionType == "lobby") delete this.lobbyClients[obj.sock.id];
     else if (obj.connectionType == "ladder") delete this.ladderClients[obj.sock.id];
@@ -222,7 +219,7 @@ class WOL {
         this.slots[game.gameId].removeClient(game);
       }
     } else {
-      console.log("!! Object with undefined connectionType disconnected");
+      log.debug("Desconexión sin tipo de conexión");
     }
   }
 }

@@ -49,8 +49,9 @@ test("mensajes inválidos se descartan y se loguean; el servidor sigue respondie
   lobby.send({ command: "ping" });
   await lobby.next("ping_ack");
   assert.equal(lobby.messages.length, 0);
-  assert.ok(env.log().includes('Mensaje inválido descartado: {"command":"buy_ammo","ammoType":5}'));
-  assert.ok(env.log().includes('Mensaje inválido descartado: {"command":"comando_inventado"}'));
+  const invalid = env.logs().filter((l) => l.msg === "Mensaje inválido descartado");
+  assert.ok(invalid.some((l) => l.level === 40 && l.packet.command === "buy_ammo" && l.packet.ammoType === 5));
+  assert.ok(invalid.some((l) => l.packet.command === "comando_inventado"));
 });
 
 test("partida completa: login → quick_play → 2 jugadores → turno → game over", async (t) => {

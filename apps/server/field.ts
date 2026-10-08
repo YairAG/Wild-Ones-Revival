@@ -3,6 +3,7 @@
 import Utils = require("./helpers/utils.js");
 import type Slot = require("./slot");
 import type CollisionAverage = require("./physics/collision.js");
+import log = require("./helpers/log.js");
 
 type Bitmap = { getPixelColor(x: number, y: number): number };
 
@@ -31,7 +32,7 @@ class Field {
       if (x < 0 || y < 0) return false;
       return Boolean(this.getFieldPointColor(x, y) & 0xff000000);
     } catch (e) {
-      console.log(e);
+      log.error({ err: e }, "Error al leer el terreno");
     }
   }
 
@@ -57,7 +58,7 @@ class Field {
         }
       }
     } else {
-      console.log("!!! bitmapData is null");
+      log.debug("El terreno no tiene bitmap");
     }
 
     return avg;

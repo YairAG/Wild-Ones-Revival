@@ -1,12 +1,10 @@
 // Comandos dentro de una partida. Casi todos: si es el turno del jugador (y no está bloqueado), se
 // actualiza su avatar y el mensaje se reenvía tal cual a los demás (sendPacketE).
-import fs = require("fs");
 import Utils = require("../helpers/utils.js");
 import type GameClient = require("../client/client.game.js");
 import type WOL = require("../wol");
 import type { GameMessage } from "@wildones/protocol";
-
-const DEBUG = true;
+import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<GameMessage, { command: C }>;
 
@@ -23,7 +21,7 @@ export function handleChat(client: GameClient, data: Msg<"chat">): void {
 
 export function handleOnReady(client: GameClient): void {
   client.getGame().updatePlayerStatus(client.player.id, "ready");
-  console.log("client.player.status " + client.player.status);
+  log.debug({ status: client.player.status }, "Estado del jugador");
   client.getGame().checkGame();
 }
 
@@ -139,14 +137,12 @@ export function handleProjectile(client: GameClient, data: Msg<"projectile">, wo
   if (properties.timeAfter == null) {
     //harmful
     client.avatar.alreadyShot = true;
-    if (DEBUG) {
-      console.log("Setting next turn at default time after weapon delay: " + wol.DEFAULT_TIME_AFTER_WEAPON);
-    }
+    log.debug({ ticks: wol.DEFAULT_TIME_AFTER_WEAPON }, "Fin de turno tras disparo (tiempo por defecto)");
     client.getGame().setNextTurnFN(wol.DEFAULT_TIME_AFTER_WEAPON);
   } else if (properties.timeAfter > 0) {
     //harmful
     client.avatar.alreadyShot = true;
-    console.log("Next turn in: " + properties.timeAfter / 10);
+    log.debug({ ticks: properties.timeAfter / 10 }, "Fin de turno tras disparo");
     client.getGame().setNextTurnFN(properties.timeAfter / 10);
 
     client.addXP(Math.round(Math.random() * 10) + 1);
@@ -164,7 +160,7 @@ export function handleProjectile(client: GameClient, data: Msg<"projectile">, wo
 
 // Sin enrutar en el original (nadie la llama)
 export function handlePlayerKill(client: GameClient, data: { id: number | string }): void {
-  console.log("player that emitted the `kill` flag is " + client.player.id);
+  log.debug({ id: client.player.id }, "kill");
 
   if (client.player.id == data.id) {
     client.getGame().setPlayerDead(data.id);
@@ -175,7 +171,7 @@ export function handlePlayerKill(client: GameClient, data: { id: number | string
 
 // Sin enrutar en el original (nadie la llama)
 export function handleRequestSynch(client: GameClient, data: { pid: number | string }): void {
-  console.log("client whos data was req: " + data.pid);
+  log.debug({ pid: data.pid }, "request_synch");
   // @ts-expect-error bug: getSynchCommand no existe (ver docs/BUGS.md)
   client.sendPacket(client.getGame().clients[data.pid].getSynchCommand());
 }
@@ -188,14 +184,7 @@ export function handleSynchPts(_client: GameClient, data: Msg<"synch_pts">): voi
 }
 
 export function handleLogProjectile(client: GameClient, data: Msg<"log_projectile">): void {
-  // bug: data.weapon viene del cliente y se usa como ruta (path traversal, ver docs/BUGS.md)
-  fs.appendFile("logs/" + data.weapon + "_xy.txt", data.x + " " + data.y + "\n", function (err) {
-    console.log(err);
-  });
-
-  fs.appendFile("logs/" + data.weapon + "_vxvy.txt", data.vx + " " + data.vy + "\n", function (err) {
-    console.log(err);
-  });
+  log.debug({ weapon: data.weapon, x: data.x, y: data.y, vx: data.vx, vy: data.vy }, "Trayectoria de proyectil");
 }
 
 // Respuesta a "synchronization": se convierte en "set_synch" con datos del servidor y se manda a todos
@@ -214,7 +203,7 @@ export function handleSynch(client: GameClient, data: Msg<"synchronization">): v
 
     if (hp == 0 && client.getGame().clients[player] && !client.getGame().clients[player].isDead()) {
       client.getGame().setPlayerDead(player);
-      if (DEBUG) console.log(">> set player dead after synch");
+      log.debug({ id: player }, "Jugador muerto tras synchronization");
     }
   }
 

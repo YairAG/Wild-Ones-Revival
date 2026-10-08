@@ -2,8 +2,7 @@
 import type LobbyClient = require("../client/client.lobby.js");
 import type WOL = require("../wol");
 import type { LobbyMessage } from "@wildones/protocol";
-
-const DEBUG = true;
+import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<LobbyMessage, { command: C }>;
 
@@ -13,10 +12,9 @@ export function handleNewPlayerFlag(client: LobbyClient): void {
 }
 
 export function handlePetModification(client: LobbyClient, data: Msg<"modify_pet">): void {
-  console.log("[" + client.connectionType + "] handlePetModification");
-  if (!client.player) console.log("no player data!");
+  if (!client.player) log.warn("modify_pet sin datos de jugador");
   if (!client.player.ownedPets[data.petid]) {
-    console.log("*** Pet id is not valid");
+    log.warn({ petid: data.petid }, "modify_pet: mascota inexistente");
     return;
   }
 
@@ -49,7 +47,7 @@ export function handleBuyAccessory(client: LobbyClient, data: Msg<"buy_accessory
   const type = data.type;
 
   if (!wol.accessoriesObj[type]) {
-    console.log("type of accessory not found!");
+    log.warn({ type }, "buy_accessory: accesorio inexistente");
     return;
   }
 
@@ -59,7 +57,7 @@ export function handleBuyAccessory(client: LobbyClient, data: Msg<"buy_accessory
       client.sendUpdate();
       client.updatePlayerData();
     } else {
-      if (DEBUG) console.log(">> not enough treats");
+      log.debug({ type }, "buy_accessory: sin treats");
     }
   } else {
     if (client.chargeGold(wol.accessoriesObj[type].price as number)) {
@@ -67,7 +65,7 @@ export function handleBuyAccessory(client: LobbyClient, data: Msg<"buy_accessory
       client.sendUpdate();
       client.updatePlayerData();
     } else {
-      if (DEBUG) console.log(">> not enough gold");
+      log.debug({ type }, "buy_accessory: sin oro");
     }
   }
 }
@@ -96,7 +94,7 @@ export function handleAccLoad(client: LobbyClient, data: Msg<"set_acc_load">, wo
     client.sendUpdate();
     client.updatePlayerData();
   } else {
-    console.log("Client " + client.player.dname + " is feeling 1337 today!");
+    log.warn({ dname: client.player.dname, load: data.load }, "set_acc_load: combinación inválida");
     //log event
   }
 }
@@ -109,28 +107,27 @@ export function handleBuyPet(client: LobbyClient, data: Msg<"buy_pet">, wol: WOL
     wol.config.petDetailColors.indexOf(data.color2.toString(16)) < 0 ||
     wol.config.petMainColors.indexOf(data.color1.toString(16)) < 0
   ) {
-    if (DEBUG) console.log(">>> Color hack!");
+    log.warn({ dname: client.player.dname }, "buy_pet: color no permitido");
     return;
   }
 
   if (!wol.petsObj[data.type]) {
-    if (DEBUG) console.log(">>> pet does not exist in crumbs " + data.type);
+    log.warn({ type: data.type }, "buy_pet: mascota inexistente");
     return;
   }
 
   if (wol.petsObj[data.type].currency == "treats") {
     if (!client.chargeTreats(parseInt(String(wol.petsObj[data.type].price)))) {
-      if (DEBUG) console.log(">> not enough treats for pet!");
+      log.debug("buy_pet: sin treats");
       return;
     }
   } else {
     if (!client.chargeGold(parseInt(String(wol.petsObj[data.type].price)))) {
-      if (DEBUG) console.log(">> not enough gold for pet!");
+      log.debug("buy_pet: sin oro");
       return;
     }
   }
 
-  if (DEBUG) console.log(">> surpassed checkers adopting pet!");
 
   const petInfo = {
     id: Object.keys(client.player.ownedPets).length + 1,
@@ -179,7 +176,7 @@ export function handleBuyAmmo(client: LobbyClient, data: Msg<"buy_ammo">, wol: W
   const count = data.ammoCount;
 
   if (!wol.weaponsObj[type]) {
-    if (DEBUG) console.log(">> no wep of type " + type);
+    log.warn({ type }, "buy_ammo: arma inexistente");
     return;
   }
 
@@ -201,8 +198,8 @@ export function handleBuyAmmo(client: LobbyClient, data: Msg<"buy_ammo">, wol: W
 
     client.sendUpdate();
     client.updatePlayerData();
-  } else if (DEBUG) {
-    console.log(weapon.currency == "treats" ? ">> could not afford treat wep " + type : ">> could not afford wep gold" + type);
+  } else {
+    log.debug({ type, currency: weapon.currency }, "buy_ammo: sin dinero");
   }
 }
 
@@ -219,7 +216,7 @@ export function handleSetWeaponsEquipped(client: LobbyClient, data: Msg<"set_wea
     }
 
     if (!client.player.userWeaponsOwned[data.value[i]]) {
-      console.log(">> invalid_set: " + data.value[i]);
+      log.warn({ weapon: data.value[i] }, "set_weapons_equipped: arma que no tiene");
       // @ts-expect-error bug: falta this., lanza ReferenceError (ver docs/BUGS.md)
       invalidItemLog.write("Supposedly invalid item: " + data.value[i]);
       validSet = false;

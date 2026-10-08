@@ -99,7 +99,7 @@ test("set_weapons_equipped", async () => {
   caro.send({ command: "set_weapons_equipped", value: ["nuke"] });
   await sleep(300);
   assert.deepEqual(caro.messages, []);
-  assert.ok(env.log().includes(">> invalid_set: nuke"));
+  assert.ok(env.logs().some((l) => l.msg === "set_weapons_equipped: arma que no tiene" && l.weapon === "nuke"));
 });
 
 test("chance_wheel cobra 2 treats y da un arma", async () => {

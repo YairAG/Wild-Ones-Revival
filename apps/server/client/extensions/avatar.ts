@@ -7,6 +7,7 @@ import type CollisionAverage = require("../../physics/collision.js");
 import type ChassisProperties = require("../../properties/chassis.properties.js");
 import type WeaponProperties = require("../../properties/weapon.properties.js");
 import type GameClient = require("../client.game.js");
+import log = require("../../helpers/log.js");
 
 type PointXY = { X: number; Y: number };
 
@@ -363,7 +364,7 @@ class Avatar extends Physical {
     this.Y += dY;
 
     if (this.parent.getGame().currentPlayer == this.parent.player.id && this.parent.getGame().tick % 50 == 0)
-      console.log("[" + this.parent.getGame().tick + "] " + "X is " + this.X + " Y is " + this.Y);
+      log.debug({ tick: this.parent.getGame().tick, X: this.X, Y: this.Y }, "Posición del avatar");
 
     if (dX != 0 && dY != 0) {
       if (this.parent.getGame().tick % 1 == 0) {

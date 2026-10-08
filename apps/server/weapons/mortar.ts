@@ -9,6 +9,7 @@
 import Physical = require("../physics/physical.js");
 import type WeaponProperties = require("../properties/weapon.properties.js");
 import type Slot = require("../slot");
+import log = require("../helpers/log.js");
 
 interface Mortar extends Physical {
   properties: WeaponProperties;
@@ -25,9 +26,7 @@ function Mortar(this: Mortar, properties: WeaponProperties, x: number, y: number
   this.Y = y;
   this.Vx = vx;
   this.Vy = vy;
-  console.log("boundradius " + this.boundRadius);
-  console.log(this.windR);
-  console.log("Launched mortar with X: " + this.X + " Y: " + this.Y + " Vx: " + this.Vx + " Vy: " + this.Vy);
+  log.debug({ X: this.X, Y: this.Y, Vx: this.Vx, Vy: this.Vy }, "Mortar lanzado");
   this.slot = slot;
 }
 
@@ -41,13 +40,12 @@ function Mortar(this: Mortar, properties: WeaponProperties, x: number, y: number
     this.Vy = this.Vy + (this.gravity + (0 - this.Vy) * this.windR) * this.dt;
 
     if (averageHit.nP != 0) {
-      console.log("projectile hit something!");
+      log.debug("Mortar chocó");
       this.move();
       this.onComplete();
       return;
     } else {
-      console.log("projectile did not hit! X: " + this.X + " Y: " + this.Y + " Vx: " + this.Vx + " Vy: " + this.Vy +
-        " WindR " + this.windR + " gravity " + this.gravity + " dt " + this.dt);
+      log.debug({ X: this.X, Y: this.Y, Vx: this.Vx, Vy: this.Vy }, "Mortar en vuelo");
     }
   },
 
@@ -66,7 +64,7 @@ function Mortar(this: Mortar, properties: WeaponProperties, x: number, y: number
 
   onComplete(this: Mortar) {
     this.complete = true;
-    console.log("Mortar exploded at " + this.X + " " + this.Y);
+    log.debug({ X: this.X, Y: this.Y }, "Mortar explotó");
     this.slot.field.explode(this.X, this.Y, this.properties.Rdirt); //this should be expanded
   },
 };

@@ -4,6 +4,7 @@ import type Database = require("../database.js");
 import type WOL = require("../wol");
 import type { Player } from "@wildones/protocol";
 import type { GameSocket, UserDoc } from "../types";
+import log = require("../helpers/log.js");
 
 class LadderClient {
   declare sock: GameSocket;
@@ -47,7 +48,7 @@ class LadderClient {
     /* Player data */
     this.player = {} as Player;
 
-    console.log(">> Initialized ladder client");
+    log.debug("Cliente ladder creado");
   }
 
   // ### initialization functions ###
@@ -82,19 +83,19 @@ class LadderClient {
     this.player.dname = doc.dname;
     this.player.command = "setPlayer";
     this.player.online = this.WOL.getLobbyLoad();
-    console.log(">> " + this.player.dname + " entered ladder");
+    log.info({ dname: this.player.dname }, "Entró al ladder");
   }
 
   // ### socket helpers ###
   sendPacket(packet: object): void {
     let str = JSON.stringify(packet);
     const len = ("000000" + str.length).slice(-6);
-    console.log("sending packet size: " + len + " " + str);
+    log.debug({ packet: str }, "Envío al ladder");
 
     if (!this.initialized) {
       this.initialized = true;
       str = this.newPacketHeader + len + str;
-      console.log(">> sending first packet ");
+      log.debug("Primer mensaje al ladder");
       this.write(str);
       return;
     }
@@ -108,7 +109,7 @@ class LadderClient {
     try {
       this.sock.write(str);
     } catch (e) {
-      console.log(e);
+      log.error({ err: e }, "Error al escribir en el socket");
     }
   }
 }

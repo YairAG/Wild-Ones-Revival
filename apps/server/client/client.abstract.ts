@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import type Database = require("../database.js");
 import type WOL = require("../wol");
 import type { GameSocket } from "../types";
+import log = require("../helpers/log.js");
 
 class Client {
   declare eventTrigger: events.EventEmitter;
@@ -57,7 +58,7 @@ class Client {
     try {
       this.sock.write(str);
     } catch (e) {
-      console.log(e);
+      log.error({ err: e }, "Error al escribir en el socket");
     }
   }
 }

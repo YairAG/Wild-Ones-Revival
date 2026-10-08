@@ -1,6 +1,7 @@
 // Acceso a MongoDB, colección `users`. Las operaciones no esperan respuesta: avisan por callback.
 import { MongoClient, type Db, type Filter } from "mongodb";
 import type { UserDoc } from "./types";
+import log = require("./helpers/log.js");
 
 const url = process.env.MONGO_URL || "mongodb://localhost:27017/emu";
 
@@ -10,7 +11,7 @@ class Database {
   connect(): void {
     // Si no conecta, la promesa rechazada sin catch tumba el proceso (como el assert de antes)
     MongoClient.connect(url).then(function (client) {
-      console.log("Connected correctly to server.");
+      log.info("Conectado a MongoDB");
       database = client.db();
     });
   }

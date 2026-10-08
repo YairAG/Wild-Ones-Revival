@@ -3,7 +3,6 @@
 import LobbyClient = require("../client/client.lobby.js");
 import LadderClient = require("../client/client.ladder.js");
 import GameClient = require("../client/client.game.js");
-import Logger = require("../helpers/logger.js");
 import Protocol = require("@wildones/protocol");
 import type Client = require("../client/client.abstract.js");
 import type WOL = require("../wol");
@@ -11,8 +10,7 @@ import * as auth from "./auth";
 import * as shop from "./shop";
 import * as rooms from "./rooms";
 import * as game from "./game";
-
-const DEBUG = true;
+import log = require("../helpers/log.js");
 
 type AnyClient = Client | LobbyClient | LadderClient | GameClient;
 
@@ -21,20 +19,16 @@ type Schema = typeof Protocol.lobbyMessage | typeof Protocol.ladderMessage | typ
 
 function isValid(schema: Schema, packet: unknown): boolean {
   const result = schema.safeParse(packet);
-  if (!result.success) console.log("!! Mensaje inválido descartado: " + JSON.stringify(packet) + "\n" + result.error.message);
+  if (!result.success) log.warn({ packet, error: result.error.message }, "Mensaje inválido descartado");
   return result.success;
 }
 
 class Handler {
   declare WOL: WOL;
-  declare invalidItemLog: Logger;
 
   constructor(wol: WOL) {
-    if (DEBUG) {
-      console.log(">> Initialized Handler");
-    }
+    log.debug("Handler creado");
     this.WOL = wol;
-    this.invalidItemLog = new Logger("invalidItem");
   }
 
   //### Utils ###
@@ -60,13 +54,13 @@ class Handler {
       try {
         this.handleJSON(client, data);
       } catch (e) {
-        console.log("exception: " + e);
+        log.error({ err: e }, "Excepción al procesar datos");
       }
     }
   }
 
   handleJSON(client: AnyClient, data: Buffer | string): void {
-    console.log("handleJSON[ " + client.connectionType + "] " + data);
+    log.debug({ connectionType: client.connectionType, data: String(data) }, "Datos recibidos");
     if (!data) return;
     data = data.toString();
 
@@ -112,12 +106,12 @@ class Handler {
 
     //in case data gets split!
     if (stateObject.awaitingData) {
-      if (DEBUG) console.log(">> waiting for more data");
+      log.debug("Esperando el resto del mensaje");
       stateObject.tempBuffer += data;
       stateObject.dataParts++;
       if (stateObject.dataParts > 8) {
         //stop awaiting for data
-        if (DEBUG) console.log("!! giving up wait for more data " + stateObject.tempBuffer);
+        log.warn({ data: stateObject.tempBuffer }, "Mensaje incompleto descartado");
         stateObject.awaitingData = false;
         stateObject.tempBuffer = "";
         stateObject.tempBufferLen = 0;
@@ -129,7 +123,7 @@ class Handler {
         stateObject.awaitingData = false;
 
         if (stateObject.connectionType == "game") {
-          if (DEBUG) console.log(">> glued all the data together: " + stateObject.tempBuffer);
+          log.debug({ data: stateObject.tempBuffer }, "Mensaje reensamblado");
           this.handleGameCommand(stateObject as GameClient, JSON.parse(stateObject.tempBuffer.substr(0, stateObject.tempBufferLen)));
           if (stateObject.tempBuffer.length > stateObject.tempBufferLen) {
             this.handleJSON(stateObject, stateObject.tempBuffer.substr(stateObject.tempBufferLen)); //what if this is incomplete??
@@ -175,7 +169,6 @@ class Handler {
     const wol = this.WOL;
     switch (packet.command) {
       case "logIn":
-        console.log("handling login");
         auth.handleLogin(client, packet);
         break;
       case "dname":
@@ -301,7 +294,7 @@ class Handler {
         game.handlePosition(client, packet);
         break;
       case "request_synch":
-        console.log("REQUEST SYNCH\n\n\n\n");
+        log.debug("request_synch");
         break;
       case "set_aim":
         game.handleSetAim(client, packet);

@@ -3,17 +3,15 @@
 import type LobbyClient = require("../client/client.lobby.js");
 import type WOL = require("../wol");
 import type { LobbyMessage } from "@wildones/protocol";
-
-const DEBUG = true;
+import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<LobbyMessage, { command: C }>;
 
 export function handleQuickPlay(client: LobbyClient, packet: Msg<"quick_play">, wol: WOL): void {
   const mapDetails = wol.validateMapDetails(client, packet);
-  if (DEBUG) console.log(">> Validated map details");
   const gameId = wol.findSlot(client, mapDetails, null);
 
-  if (DEBUG) console.log(">> Found slot");
+  log.debug({ gameId }, "Partida encontrada");
   if (gameId == 0) {
     //The map details provided seem to be invalid
     return;

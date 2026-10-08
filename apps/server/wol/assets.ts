@@ -7,8 +7,7 @@ import PetFoodProperties = require("../properties/pet.food.properties.js");
 import ChassisProperties = require("../properties/chassis.properties.js");
 import type WOL = require("./index.js");
 import type { GameConfig } from "../types";
-
-const DEBUG = true;
+import log = require("../helpers/log.js");
 
 type Item = Record<string, unknown>;
 
@@ -23,7 +22,7 @@ export function loadAssets(wol: WOL, pos: number): void {
     )
     .then(function (body) {
       wol.assetsObj[item] = JSON.parse(body as string);
-      console.log("Loaded asset: " + item);
+      log.debug({ item }, "Asset cargado");
 
       if (wol.assetsList.length - 1 > pos) loadAssets(wol, pos + 1);
       else onAssetsLoaded(wol);
@@ -31,7 +30,6 @@ export function loadAssets(wol: WOL, pos: number): void {
 }
 
 function onAssetsLoaded(wol: WOL): void {
-  if (DEBUG) console.log("All assets loaded. Processing..");
   wol.config = wol.assetsObj["Config"] as GameConfig;
   wol.accessoriesObj = byKey(wol.assetsObj["Accessories"], AccessoriesProperties, "type");
   wol.crateObj = wol.assetsObj["Crate"];
@@ -40,7 +38,7 @@ function onAssetsLoaded(wol: WOL): void {
   wol.petFoodsObj = byKey(wol.assetsObj["PetFoods"], PetFoodProperties, "type");
   wol.petsObj = byKey(wol.assetsObj["Pets"], ChassisProperties, "type");
   wol.weaponsObj = byKey(wol.assetsObj["WeaponsGrid"], WeaponProperties, "type");
-  if (DEBUG) console.log("Done processing. \n");
+  log.info({ assets: wol.assetsList.length }, "Assets cargados");
   wol.run();
 }
 
@@ -67,15 +65,12 @@ function processLevels(wol: WOL): void {
     const level = (wol.levelsObj as Record<string, Record<string, string[]>>)[i];
     for (const itemIndex in level.map) {
       wol.itemLevel[level.map[itemIndex]] = _level;
-      if (DEBUG) console.log("item " + level.map[itemIndex] + " has level " + _level);
     }
     for (const itemIndex in level.chassis) {
       wol.itemLevel[level.chassis[itemIndex]] = _level;
-      if (DEBUG) console.log("item " + level.chassis[itemIndex] + " has level " + _level);
     }
     for (const itemIndex in level.weapon) {
       wol.itemLevel[level.weapon[itemIndex]] = _level;
-      if (DEBUG) console.log("item " + level.weapon[itemIndex] + " has level " + _level);
     }
     _level++;
   }

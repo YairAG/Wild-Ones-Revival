@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import log = require("./log.js");
 
 function Utils() {}
 
@@ -44,7 +45,7 @@ Utils.stringToInt = function (str: string | undefined): number {
   if (!str) return 0;
 
   if (str.length != 16) {
-    console.log("Bad number!");
+    log.warn({ str }, "Número codificado inválido");
     return -1;
   }
 

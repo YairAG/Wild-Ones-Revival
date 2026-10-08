@@ -3,8 +3,7 @@
 import type WOL = require("./index.js");
 import type Slot = require("../slot");
 import type LobbyClient = require("../client/client.lobby.js");
-
-const DEBUG = true;
+import log = require("../helpers/log.js");
 
 export type MapDetails = { mapName?: string; playerCount?: number; gameDuration?: number; turnDuration?: number };
 
@@ -41,8 +40,7 @@ export function findSimilarSlot(wol: WOL, map: Slot): string | undefined {
     const tmpId = gameId + i;
     if (wol.slots[tmpId]) {
       if (isOccupied(wol.slots[tmpId])) {
-        console.log(">> Occupied slot: date time now is " + Date.now());
-        console.log(">> Occupied slot: starting time is " + wol.slots[tmpId].startingTime);
+        log.debug({ gameId: tmpId }, "Partida ocupada");
         continue;
       }
 
@@ -88,7 +86,7 @@ export function findSlot(wol: WOL, mapDetails: MapDetails, customName: string | 
       }
     } else {
       wol.createSlot(gameId, mapName, playerCount, gameDuration, turnDuration);
-      if (DEBUG) console.log(">> Created slot with gameId = " + gameId);
+      log.debug({ gameId }, "Sala creada");
       return gameId;
     }
   } else {
@@ -100,8 +98,7 @@ export function findSlot(wol: WOL, mapDetails: MapDetails, customName: string | 
       tmpId = gameId + i;
       if (wol.slots[tmpId]) {
         if (isOccupied(wol.slots[tmpId])) {
-          console.log(">> Occupied slot: date time now is " + Date.now());
-          console.log(">> Occupied slot: starting time is " + wol.slots[tmpId].startingTime);
+          log.debug({ gameId: tmpId }, "Partida ocupada");
           continue;
         }
 

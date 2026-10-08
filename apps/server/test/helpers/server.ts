@@ -42,6 +42,7 @@ async function startTestServer(users: Document[]) {
       ...process.env,
       PORT: String(port),
       MONGO_URL: mongoUrl,
+      LOG_LEVEL: "debug",
       ASSETS_URL: `http://127.0.0.1:${(assetServer.address() as import("net").AddressInfo).port}/`,
     },
   });
@@ -49,7 +50,7 @@ async function startTestServer(users: Document[]) {
   server.stdout.on("data", (d) => (log += d));
   server.stderr.on("data", (d) => (log += d));
 
-  for (let i = 0; !log.includes("Accepting clients"); i++) {
+  for (let i = 0; !log.includes('"msg":"Aceptando clientes"'); i++) {
     if (i > 300) throw new Error("El servidor no arrancó en 15 s:\n" + log);
     await sleep(50);
   }
@@ -59,6 +60,16 @@ async function startTestServer(users: Document[]) {
     port,
     db,
     log: () => log,
+    // Líneas de log (JSON de pino) ya parseadas; ignora lo que no sea JSON
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logs: (): Record<string, any>[] =>
+      log.split("\n").flatMap((line) => {
+        try {
+          return [JSON.parse(line)];
+        } catch {
+          return [];
+        }
+      }),
 
     async connect(urlPath: string) {
       const c = new TestClient(port, urlPath);

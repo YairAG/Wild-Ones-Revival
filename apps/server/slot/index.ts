@@ -11,8 +11,7 @@ import type GameClient = require("../client/client.game.js");
 import type WOL = require("../wol");
 import type WeaponProperties = require("../properties/weapon.properties.js");
 import type { GameStatus } from "@wildones/protocol";
-
-const DEBUG = false;
+import log = require("../helpers/log.js");
 
 type PointXY = { X: number; Y: number };
 type Packet = { [key: string]: unknown };
@@ -118,13 +117,13 @@ class Slot {
       this.tick += 10;
 
       if (this.tick % 50 == 0) {
-        if (DEBUG) console.log(">> Game Tick: " + this.tick);
+        log.debug({ tick: this.tick }, "Tick");
         this.sendTick();
       }
 
       // @ts-expect-error bug: Date no tiene .now, así que esta condición nunca se cumple (ver docs/BUGS.md)
       if (parseInt(this.lastSynchCheck.date) + 20 < new Date().now) {
-        console.log("haven't received tick in 20ms");
+        log.debug("Sin synch_check reciente");
       }
 
       //step avatar
@@ -143,7 +142,7 @@ class Slot {
 
   checkIfTurnIsOver(): void {
     if (this.turnEndTick > 0 && this.turnEndTick <= this.tick) {
-      if (DEBUG) console.log(">> Changing turn");
+      log.debug({ gameId: this.gameId }, "Cambio de turno");
       this.setNextTurn(100);
       this.sendChangeTurn();
     }
@@ -155,13 +154,13 @@ class Slot {
 
       if (len >= 2 && !this.startingTimeout) {
         //everybody is ready, there are at least 2 players and the game hasn't been set to 'starting'
-        console.log(">> Starting game in 5 seconds");
+        log.info({ gameId: this.gameId }, "La partida empieza en 5 s");
         this.updateGameStatus("starting");
         this.refresh();
         this.startingTimeout = setTimeout(
           function (this: Slot) {
             this.refresh();
-            console.log(">> Time is up. Starting game");
+            log.info({ gameId: this.gameId }, "Empieza la partida");
             this.startingTime = 0;
             this.sendConfirmation();
             this.startGame();
@@ -176,11 +175,10 @@ class Slot {
         // some new players hop in and they're not "ready", the game should stop.
 
         if (this.status == "idle") return; //it's already been idled
-        console.log(">> New game status: Idle");
+        log.debug({ gameId: this.gameId }, "Partida en espera");
         this.updateGameStatus("idle");
         //handle timeout
         if (this.startingTimeout) {
-          console.log("clearing timeout!");
           clearTimeout(this.startingTimeout ?? undefined);
           this.startingTimeout = null;
         }
@@ -209,7 +207,7 @@ class Slot {
   }
 
   stopGameStart(): void {
-    console.log("stopping game!");
+    log.debug({ gameId: this.gameId }, "Cuenta atrás cancelada");
     clearTimeout(this.startingTimeout ?? undefined);
     this.startingTimeout = null;
     this.updateGameStatus("idle");
@@ -281,7 +279,7 @@ class Slot {
   //### weps ###
 
   addProjectile(properties: WeaponProperties, x: number, y: number, vx: number, vy: number): void {
-    console.log("adding projectile! " + x + " " + y + " " + vx + " " + vy);
+    log.debug({ x, y, vx, vy }, "Proyectil agregado");
     // @ts-expect-error bug: makeWeapon espera (name, properties, x, y, vx, vy) (ver docs/BUGS.md)
     this.physicsObjects.push(this.weapon.makeWeapon(properties, x, y, vx, vy));
   }
@@ -291,9 +289,8 @@ class Slot {
   addClient(client: GameClient): void {
     this.clients[client.player.id] = client;
     if (client.avatar != null) {
-      console.log(">> client avatar is not null. adding to physicsObjects");
       this.physicsObjects.push(client.avatar);
-    } else console.log("!! client avatar is null");
+    } else log.warn({ id: client.player.id }, "Cliente sin avatar en la partida");
 
     if (this.currentPlayer == -1) this.currentPlayer = client.player.id;
     else if (client.player.id < (this.currentPlayer as number)) {
@@ -303,7 +300,6 @@ class Slot {
 
   removeClient(client: GameClient): void {
     //change status from dead to disconnected
-    if (DEBUG) console.log(">> checking if player was dead");
     const deadPlayerIndex = this.deadPlayers.indexOf(client.player.id);
     if (deadPlayerIndex >= 0) {
       this.deadPlayers.splice(deadPlayerIndex, 1);
@@ -443,7 +439,7 @@ class Slot {
     //set the status to gameover to pause any ticking, processing etc. and
     //don't free this slot. not yet.
     //give awards, show screens etc. first
-    console.log(">> Game over!");
+    log.info({ gameId: this.gameId }, "Fin de partida");
 
     const playerOrder = this.deadPlayers.reverse();
     const playerAlive = this.getPlayerAlive();
@@ -516,7 +512,6 @@ class Slot {
           if (parseInt(pKey) < (this.currentPlayer as number) && !this.clients[pKey].isDead()) {
             this.currentPlayer = pKey;
             foundPlayer = true;
-            console.log("Found in second loop: " + pKey + " " + this.clients[pKey].player.dname);
           }
         }
       }
@@ -524,7 +519,7 @@ class Slot {
 
     if (!foundPlayer) return -1;
 
-    console.log("current player is " + this.currentPlayer);
+    log.debug({ gameId: this.gameId, currentPlayer: this.currentPlayer }, "Turno de");
   }
 
   countPlayersAlive(): number {
