@@ -14,9 +14,9 @@ const { TestClient, sleep } = require("./client.js");
 
 const ROOT = path.join(__dirname, "..");
 const PORT = 18000;
-const MONGO_VERSION = "4.4.29"; // el driver mongodb 2.2 no funciona con Mongo 6+
+const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
 
-let mongod, db, assetServer, server, serverLog = "";
+let mongod, mongoClient, db, assetServer, server, serverLog = "";
 const clients = [];
 
 function user(id, dname) {
@@ -50,7 +50,8 @@ async function waitForUser(dname, check) {
 before(async () => {
   mongod = await MongoMemoryServer.create({ binary: { version: MONGO_VERSION } });
   const mongoUrl = mongod.getUri().replace(/\/?$/, "/emu");
-  db = await MongoClient.connect(mongoUrl);
+  mongoClient = await MongoClient.connect(mongoUrl);
+  db = mongoClient.db();
   await db.collection("users").insertMany([user(1, "Ana"), user(2, "Beto")]);
 
   assetServer = serveAssets(path.join(__dirname, "fixtures/assets"), 0);
@@ -78,7 +79,7 @@ after(async () => {
   clients.forEach((c) => c.close());
   server?.kill();
   assetServer?.close();
-  await db?.close();
+  await mongoClient?.close();
   await mongod?.stop();
   if (process.env.SERVER_LOG) console.log(serverLog);
 });

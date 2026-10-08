@@ -2,8 +2,14 @@
 
     pnpm test
 
-No hace falta instalar Mongo: los tests traen el suyo. La primera vez descargan MongoDB (~280 MB, queda en
-caché), después tardan ~8 s.
+No hace falta instalar Mongo: los tests traen el suyo. La primera vez descargan MongoDB (unos cientos de MB,
+queda en caché), después tardan ~8 s.
+
+Por defecto usan MongoDB 9.0.2. Para probar otra versión:
+
+    MONGO_VERSION=7.0.14 pnpm test
+
+Probado en verde con 7.0.14, 8.0.4 y 9.0.2.
 
 ## Qué son
 
@@ -18,8 +24,7 @@ arreglamos ese bug, se actualiza el test en el mismo commit que el arreglo.
 
 `test/characterization.test.js`:
 
-1. Arranca un **MongoDB temporal** en memoria (`mongodb-memory-server`, versión 4.4 por el driver actual) y
-   crea dos jugadores: Ana (id 1) y Beto (id 2).
+1. Arranca un **MongoDB temporal** (`mongodb-memory-server`) y crea dos jugadores: Ana (id 1) y Beto (id 2).
 2. Sirve los **datos de juego inventados** de `test/fixtures/assets/` con `scripts/serve-assets.js`.
 3. Arranca el **servidor real** sin modificar (`node app.js`) como otro proceso, apuntando a lo anterior.
 4. Se conecta con `test/client.js`, un cliente mínimo que habla el protocolo, y juega:

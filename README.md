@@ -13,7 +13,7 @@ de Playdom/Disney.
     pnpm start             # TCP en 0.0.0.0:$PORT (8000 por defecto)
     pnpm test              # no necesita Mongo instalado
 
-Requiere MongoDB (driver 2.2: Mongo 4.4 sí, 6+ probablemente no) y los datos del juego en `assets/json/`
+Requiere MongoDB 4.4 a 9.0 (probado con 7.0, 8.0 y 9.0.2) y los datos del juego en `assets/json/`
 (no están en el repo).
 
 ## Documentación

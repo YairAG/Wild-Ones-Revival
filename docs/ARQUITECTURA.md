@@ -28,7 +28,7 @@ El juego original (Flash) hacía casi todo en el cliente: física, disparos, da�
 | `client/client.game.js` | Conexión dentro de una partida. Tiene un `avatar`. |
 | `client/extensions/avatar.js` | Estado del personaje en partida (posición, dirección, si ya disparó). La parte de física no se ejecuta. |
 | `slot.js` | Una partida: jugadores, estado, turnos, reloj, fin de partida y premios. |
-| `database.js` | Acceso a MongoDB (colección `users`): contar, leer y actualizar jugadores. |
+| `database.js` | Acceso a MongoDB (colección `users`): contar, leer y actualizar jugadores. Driver `mongodb` 7 (servidores 4.4 a 9.0). Si no conecta, reintenta 30 s y el proceso se cae. |
 | `properties/*.js` | Plantillas con valores por defecto para armas, mapas, mascotas, accesorios y comida. Se rellenan con los `.dat`. |
 | `helpers/utils.js` | Utilidades: codificar números como texto hex, generar claves aleatorias, md5. |
 | `helpers/logger.js` | Escribe logs a archivo (está roto, ver BUGS). |
