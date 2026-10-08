@@ -1,8 +1,8 @@
 // Tests de caracterización del lobby: tienda, mascotas, ruleta, popups y salas con nombre.
 // Fijan el comportamiento de HOY, bugs incluidos (marcados con "bug:"). Ver docs/TESTS.md.
-const { test, before, after } = require("node:test");
-const assert = require("node:assert/strict");
-const { startTestServer, user, sleep } = require("./helpers/server.js");
+import { test, before, after } from "node:test";
+import assert = require("node:assert/strict");
+import { startTestServer, user, sleep } from "./helpers/server";
 
 let env, caro;
 const last = (responses) => responses.filter((m) => m.command === "player").at(-1);
@@ -104,7 +104,7 @@ test("set_weapons_equipped", async () => {
 test("chance_wheel cobra 2 treats y da un arma", async () => {
   const r = await caro.request({ command: "chance_wheel" });
   const wheel = r.find((m) => m.command === "chance_wheel_return");
-  const [[weapon, amount]] = Object.entries(wheel.value.reward);
+  const [[weapon, amount]] = Object.entries(wheel.value.reward as Record<string, number>);
   assert.ok(["teleport", "grappling", "grenade", "flamethrower", "goo", "mirv", "drill", "lasercannon"].includes(weapon));
   assert.ok(amount >= 1);
   assert.ok(["true", "false"].includes(wheel.value.special));

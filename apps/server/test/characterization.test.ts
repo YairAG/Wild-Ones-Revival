@@ -1,10 +1,10 @@
 // Tests de caracterización: fijan cómo se comporta el servidor HOY (bugs incluidos), para detectar
 // cualquier cambio durante la migración. Ver docs/TESTS.md.
-const { test, before, after } = require("node:test");
-const assert = require("node:assert/strict");
-const { once } = require("events");
-const net = require("net");
-const { startTestServer, user, sleep } = require("./helpers/server.js");
+import { test, before, after } from "node:test";
+import assert = require("node:assert/strict");
+import { once } from "events";
+import net = require("net");
+import { startTestServer, user, sleep } from "./helpers/server";
 
 let env;
 const connect = (urlPath) => env.connect(urlPath);

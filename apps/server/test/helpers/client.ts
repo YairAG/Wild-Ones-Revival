@@ -1,20 +1,28 @@
 // Cliente mínimo que habla el protocolo del servidor (ver docs/PROTOCOL.md).
-const net = require("net");
+import net = require("net");
 
 const HEADER = "Originality is undetected plagiarism.\r\n\r\n";
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Mensaje recibido: JSON arbitrario del servidor (en los tests se leen campos sueltos sin tiparlos)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Message = { command: string; [key: string]: any };
 
 class TestClient {
+  port: number;
+  path: string;
+  buffer = "";
+  messages: Message[] = []; // mensajes recibidos y aún no consumidos con next()
+  sawHeader = false;
+  socket!: net.Socket;
+
   // path: "/ballistic/lobby?session=x", "/ballistic/game?gameId=..&session=..", etc.
-  constructor(port, path) {
+  constructor(port: number, path: string) {
     this.port = port;
     this.path = path;
-    this.buffer = "";
-    this.messages = []; // mensajes recibidos y aún no consumidos con next()
-    this.sawHeader = false;
   }
 
-  connect() {
+  connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.socket = net.connect(this.port, "127.0.0.1", () => {
         this.socket.write(`POST ${this.path} HTTP/1.1\r\nHost: localhost\r\n\r\n`);
@@ -25,12 +33,12 @@ class TestClient {
     });
   }
 
-  send(message) {
+  send(message: object): void {
     const json = JSON.stringify(message);
     this.socket.write(String(json.length).padStart(6, "0") + json);
   }
 
-  onData(text) {
+  onData(text: string): void {
     if (text.startsWith(HEADER)) {
       this.sawHeader = true;
       text = text.slice(HEADER.length);
@@ -46,11 +54,11 @@ class TestClient {
   }
 
   // Espera el siguiente mensaje con ese command. Descarta los anteriores a él.
-  async next(command, timeout = 3000) {
+  async next(command: string, timeout = 3000): Promise<Message> {
     const end = Date.now() + timeout;
     while (Date.now() < end) {
       const i = this.messages.findIndex((m) => m.command === command);
-      if (i >= 0) return this.messages.splice(0, i + 1).pop();
+      if (i >= 0) return this.messages.splice(0, i + 1).pop()!;
       await sleep(20);
     }
     throw new Error(`No llegó "${command}" en ${timeout} ms`);
@@ -58,7 +66,7 @@ class TestClient {
 
   // Envía un mensaje y devuelve todo lo que respondió el servidor. Manda detrás un ping de control:
   // el servidor atiende en orden, así que al llegar el ping_ack ya respondió al mensaje.
-  async request(message) {
+  async request(message: { command: string }): Promise<Message[]> {
     this.messages.length = 0;
     this.send(message);
     this.send({ command: "ping" });
@@ -71,9 +79,10 @@ class TestClient {
     return this.messages.splice(0, i + 1).slice(0, -1);
   }
 
-  close() {
+  close(): void {
     this.socket.destroy();
   }
 }
 
-module.exports = { TestClient, sleep };
+export { TestClient, sleep };
+export type { Message };

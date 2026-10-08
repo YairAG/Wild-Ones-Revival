@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "Servidor de juego Wild Ones (lobby, partidas, turnos).",
-  "main": "app.js",
+  "main": "app.ts",
   "scripts": {
-    "start": "tsx --env-file-if-exists=.env app.js",
-    "dev": "tsx watch --env-file-if-exists=.env app.js",
+    "start": "tsx --env-file-if-exists=.env app.ts",
+    "dev": "tsx watch --env-file-if-exists=.env app.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "assets": "node scripts/serve-assets.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "assets": "tsx scripts/serve-assets.ts",
+    "test": "node --import tsx --test \"test/**/*.test.ts\""
   },
   "dependencies": {
     "@wildones/protocol": "workspace:*",

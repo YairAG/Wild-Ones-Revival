@@ -2,7 +2,8 @@
 // Author:        3.14
 // Date:          July 2016
 // License:       MIT
-
-var WOL = require('./wol');
+//
+// Punto de entrada del servidor de juego.
+import WOL = require("./wol");
 
 new WOL().start();

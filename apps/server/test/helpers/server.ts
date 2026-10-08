@@ -1,12 +1,12 @@
 // Arranca un entorno completo para los tests: Mongo temporal, assets inventados y el servidor real
 // (como proceso aparte). Cada archivo de test arranca el suyo.
-const { spawn } = require("child_process");
-const { once } = require("events");
-const path = require("path");
-const { MongoMemoryServer } = require("mongodb-memory-server");
-const { MongoClient } = require("mongodb");
-const serveAssets = require("../../scripts/serve-assets.js");
-const { TestClient, sleep } = require("./client.js");
+import { spawn } from "child_process";
+import { once } from "events";
+import path = require("path");
+import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoClient } from "mongodb";
+import serveAssets = require("../../scripts/serve-assets");
+import { TestClient, sleep } from "./client";
 
 const ROOT = path.join(__dirname, "../..");
 const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
@@ -36,13 +36,13 @@ async function startTestServer(users) {
   await once(assetServer, "listening");
 
   // --import tsx: permite que el servidor tenga archivos .ts sin compilar
-  const server = spawn(process.execPath, ["--import", "tsx", "app.js"], {
+  const server = spawn(process.execPath, ["--import", "tsx", "app.ts"], {
     cwd: ROOT,
     env: {
       ...process.env,
       PORT: String(port),
       MONGO_URL: mongoUrl,
-      ASSETS_URL: `http://127.0.0.1:${assetServer.address().port}/`,
+      ASSETS_URL: `http://127.0.0.1:${(assetServer.address() as import("net").AddressInfo).port}/`,
     },
   });
   let log = "";
@@ -96,4 +96,4 @@ async function startTestServer(users) {
   };
 }
 
-module.exports = { startTestServer, user, sleep };
+export { startTestServer, user, sleep };
