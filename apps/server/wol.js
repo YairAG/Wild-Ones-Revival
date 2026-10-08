@@ -7,7 +7,7 @@ var
     request                 = require('request'),
 
     Database                = require('./database.js'),
-    PacketHandler           = require('./handler.js'),
+    PacketHandler           = require('./handler'),
     Slot                    = require('./slot'),
     Utils                   = require('./helpers/utils.js'),
 

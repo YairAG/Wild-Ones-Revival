@@ -4,7 +4,7 @@
 // Los tipos salen del código del servidor; no están verificados contra el cliente SWF original.
 import { z } from "zod";
 
-const msg = <C extends string, S extends z.ZodRawShape = Record<string, never>>(command: C, shape?: S) =>
+const msg = <C extends string, S extends z.ZodRawShape = Record<never, never>>(command: C, shape?: S) =>
   z.looseObject({ command: z.literal(command), ...(shape ?? ({} as S)) });
 
 const id = z.union([z.string(), z.number()]);
