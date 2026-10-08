@@ -57,7 +57,7 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 | `wol/assets.ts` | Descarga los `.dat` al arrancar y rellena las plantillas de `properties/`. |
 | `wol/matchmaking.ts` | Valida las opciones de partida y busca o crea la partida adecuada (`findSlot`). |
 | `handler/index.ts` | El "mesero": recibe los datos del socket, separa los mensajes, los valida y llama a la función de su `command`. |
-| `handler/auth.ts` | `logIn` y `start_server_connect` (identificación). |
+| `handler/auth.ts` | `logIn` (verifica el JWT) y `start_server_connect` (identificación). |
 | `handler/shop.ts` | Tienda, mascotas, ruleta y armas equipadas. |
 | `handler/rooms.ts` | `quick_play` y salas con nombre. |
 | `handler/game.ts` | Todo lo que pasa dentro de una partida. |
@@ -111,8 +111,8 @@ El servidor usa **pino** (`helpers/log.ts`): cada línea es un JSON con nivel, h
 
 - `LOG_LEVEL` en el `.env` elige desde qué nivel se muestra (por defecto `info`).
 - `pnpm dev` los muestra legibles (`pino-pretty`); `pnpm start` los deja en JSON.
-- Cualquier campo `snum` (la clave) sale como `[Redacted]`. Ojo: el log `debug` "Datos recibidos" muestra el
-  mensaje crudo, clave incluida, hasta que la tarea 8 la cambie por un JWT.
+- Cualquier campo `token` o `snum` sale como `[Redacted]`. Ojo: el log `debug` "Datos recibidos" muestra el
+  mensaje crudo, token incluido: no uses `LOG_LEVEL=debug` en producción.
 - Ya no se escribe nada en archivos.
 
 ## Configuración (`.env`)
@@ -129,7 +129,8 @@ El servidor usa **pino** (`helpers/log.ts`): cada línea es un JSON con nivel, h
 
 ## Flujo de una partida
 
-1. El cliente abre una conexión **lobby** y hace `logIn`. El server responde con los datos del jugador.
+1. El cliente abre una conexión **lobby** y hace `logIn` con el JWT de tu backend. El server lo verifica y
+   responde con los datos del jugador.
 2. Pide `quick_play`. El server busca o crea una partida y responde `join` con un `id` de partida y una
    `session` (clave de un solo uso guardada en Mongo como `gkey`).
 3. El cliente abre una segunda conexión **game** con ese `id` y `session`, y manda `start_server_connect`.

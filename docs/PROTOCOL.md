@@ -111,7 +111,7 @@ campo `command` dice qué es):
 {
   "id": 142603, "dname": "EjemploUsuario", "command": "player", "online": 3,
   "nw": -1, "level": 0, "currentPet": "1", "login_streak": 1,
-  "playerStatus": "playing", "status": "playing", "net": "M", "snum": "...",
+  "playerStatus": "playing", "status": "playing", "net": "M",
   "gamecount": 100, "gold": 1000, "treats": 200, "hp": 500000,
   "wins": 0, "losses": 0, "sesscount": 0, "xp": 0,
   "speed": 5, "attack": 100, "defence": 5, "jump": 5,
@@ -126,7 +126,6 @@ campo `command` dice qué es):
 
 - `command`: `"setPlayer"` la primera vez en lobby, `"player"` el resto.
 - `online`: número de conexiones lobby abiertas.
-- `snum` viaja al cliente y a los demás jugadores (ver BUGS).
 - En partida, `status` se usa para `"ready"`.
 
 ### 2.2 `game` / `join` (estado de una partida)
@@ -174,7 +173,7 @@ Algunos campos numéricos viajan como **16 caracteres hex** = un `double` IEEE-7
 
 | command | Payload | Efecto | Respuesta |
 |---|---|---|---|
-| `logIn` | `{"dname":"Ana","snum":"<clave>"}` | Busca en Mongo `{dname, lkey: snum}`. | `player` con `command:"setPlayer"` y luego `player` con `command:"player"`. Si falla, nada. |
+| `logIn` | `{"token":"<jwt>"}` | Verifica el JWT (ver 3.1) y busca en Mongo el usuario con `id = sub`. | `player` con `command:"setPlayer"` y luego `player` con `command:"player"`. Si falla, nada. |
 | `ping` | `{}` | — | `{"command":"ping_ack"}` |
 | `dname` | — | Se ignora. | — |
 | `setNewPlayerFlag` | `{}` | `player.nw = -1`, guarda en Mongo. | — |
@@ -195,6 +194,21 @@ Algunos campos numéricos viajan como **16 caracteres hex** = un `double` IEEE-7
 | `xpromo_fetch` | `{}` | — | `{"command":"xpromo_fetched"}` |
 | `news` | `{}` | — | `{"command":"news"}` |
 | `idlegift` | `{}` | No da nada. | `{"command":"idlegift"}` |
+
+### 3.1 Login con JWT
+
+El token lo emite tu backend de cuentas; este servidor solo lo verifica (nunca recibe contraseñas):
+
+- Firma **HS256** con el secreto compartido `JWT_SECRET`. Otros algoritmos (incluido `none`) se rechazan.
+- `sub` = `id` numérico del usuario en la colección `users` (como texto, p. ej. `"142603"`).
+- Se respeta `exp` si viene (recomendado: tokens cortos).
+- Si el token es inválido, expiró o el usuario no existe: **no se responde nada** y queda un `warn` en el log.
+
+Ejemplo de emisión en el backend (Node, `jsonwebtoken`):
+
+```js
+jwt.sign({}, process.env.JWT_SECRET, { subject: String(user.id), expiresIn: "10m" });
+```
 
 Notas:
 - `quick_play` y `create_game` comparan números con `indexOf`: `10` vale, `"10"` no.

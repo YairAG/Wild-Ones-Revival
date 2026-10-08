@@ -7,17 +7,17 @@ cada uno se corrige después en su propio commit.
 
 - ~~**Path traversal en `log_projectile`**~~ (arreglado al pasar a pino: ya no se escriben archivos). Antes `data.weapon` venía del cliente y
   se usaba en la ruta `logs/<weapon>_xy.txt`.
-- ~~**Credenciales en logs**~~ (arreglado): el registro de login ya no incluye `snum`, y pino tapa cualquier
-  campo `snum` (`[Redacted]`). Queda el log `debug` "Datos recibidos", que muestra el mensaje crudo (con la
-  clave) hasta que la tarea 8 la reemplace por un JWT.
-- **`snum` se reparte a otros jugadores**: `setupPlayer` copia `doc.snum` al objeto `player`, que se envía a
+- ~~**Credenciales en logs y contraseña en texto plano**~~ (arreglado): el login ahora es con JWT; el servidor
+  no recibe ni guarda contraseñas. Pino tapa `token`/`snum`. Solo el log `debug` "Datos recibidos" muestra el
+  token crudo.
+- ~~**`snum` se reparte a otros jugadores**~~ (arreglado): `setupPlayer` copiaba `doc.snum` al objeto `player`, que se enviaba a
   todos en la partida (`sendGamePlayers`, `sendToGame`, `playerlist` de `startGame`).
 - **`player_died` sin validar**: cualquier jugador puede mandar `{"command":"player_died","id":X}` y matar a otro.
 - **`packet.hasOwnProperty(...)` en `slot.sendPacket/sendPacketE`**: un mensaje reenviado con un campo
   llamado `hasOwnProperty` hace fallar el reenvío (se pierde para todos).
 - **`chat` sin filtro**: se reenvía el objeto tal cual, con cualquier campo que mande el cliente.
 - **`gkey` débil**: la clave de partida es `Math.random().toString(36).substring(7)` (~5-6 caracteres).
-- **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command`, `online` y `snum`.
+- **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command` y `online`.
 
 ## Errores que lanzan excepción (atrapada, el comando no hace nada)
 
