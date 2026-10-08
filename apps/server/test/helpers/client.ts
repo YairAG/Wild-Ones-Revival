@@ -1,5 +1,8 @@
 // Cliente mínimo que habla el protocolo del servidor (ver docs/PROTOCOL.md).
 import net = require("net");
+import { WebSocket } from "ws";
+
+export type Transport = "tcp" | "ws";
 
 const HEADER = "Originality is undetected plagiarism.\r\n\r\n";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -15,14 +18,21 @@ class TestClient {
   messages: Message[] = []; // mensajes recibidos y aún no consumidos con next()
   sawHeader = false;
   socket!: net.Socket;
+  ws!: WebSocket;
+  transport: Transport;
+  binary: boolean; // ws: mandar frames binarios (como Ruffle) en vez de texto
+  receivedBinary = false; // ws: si la última respuesta llegó en un frame binario
 
   // path: "/ballistic/lobby?session=x", "/ballistic/game?gameId=..&session=..", etc.
-  constructor(port: number, path: string) {
+  constructor(port: number, path: string, transport: Transport = "tcp", binary = false) {
     this.port = port;
     this.path = path;
+    this.transport = transport;
+    this.binary = binary;
   }
 
   connect(): Promise<void> {
+    if (this.transport === "ws") return this.connectWs();
     return new Promise((resolve, reject) => {
       this.socket = net.connect(this.port, "127.0.0.1", () => {
         this.socket.write(`POST ${this.path} HTTP/1.1\r\nHost: localhost\r\n\r\n`);
@@ -33,9 +43,30 @@ class TestClient {
     });
   }
 
+  // WebSocket: el mismo POST inicial y los mismos mensajes que por TCP, cada uno en un mensaje WebSocket
+  connectWs(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(`ws://127.0.0.1:${this.port}`);
+      this.ws.on("open", () => {
+        this.write(`POST ${this.path} HTTP/1.1\r\nHost: localhost\r\n\r\n`);
+        resolve();
+      });
+      this.ws.on("error", reject);
+      this.ws.on("message", (data, isBinary) => {
+        this.receivedBinary = isBinary;
+        this.onData(data.toString());
+      });
+    });
+  }
+
+  write(text: string): void {
+    if (this.transport === "tcp") this.socket.write(text);
+    else this.ws.send(this.binary ? Buffer.from(text) : text);
+  }
+
   send(message: object): void {
     const json = JSON.stringify(message);
-    this.socket.write(String(json.length).padStart(6, "0") + json);
+    this.write(String(json.length).padStart(6, "0") + json);
   }
 
   onData(text: string): void {
@@ -80,7 +111,8 @@ class TestClient {
   }
 
   close(): void {
-    this.socket.destroy();
+    if (this.transport === "tcp") this.socket.destroy();
+    else this.ws.terminate();
   }
 }
 

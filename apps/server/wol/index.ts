@@ -1,13 +1,12 @@
-// El "gerente" del servidor: carga los datos del juego, abre el puerto TCP, guarda las conexiones y las
+// El "gerente" del servidor: carga los datos del juego, abre los puertos (WebSocket/TCP), guarda las conexiones y las
 // partidas, y cada 100 ms avanza todas las partidas (update).
-import net = require("net");
-import { randomUUID } from "crypto";
 import Database = require("../database.js");
 import PacketHandler = require("../handler");
 import Slot = require("../slot");
 import Client = require("../client/client.abstract.js");
 import * as assets from "./assets";
 import * as matchmaking from "./matchmaking";
+import { listenTcp, listenWs, type Connection } from "./transport";
 import type LobbyClient = require("../client/client.lobby.js");
 import type LadderClient = require("../client/client.ladder.js");
 import type GameClient = require("../client/client.game.js");
@@ -19,8 +18,6 @@ import type ChassisProperties = require("../properties/chassis.properties.js");
 import type { Player } from "@wildones/protocol";
 import type { GameConfig, GameSocket } from "../types";
 import log = require("../helpers/log.js");
-
-const gameport = process.env.PORT || 8000;
 
 type AnyClient = Client | LobbyClient | LadderClient | GameClient;
 
@@ -109,45 +106,30 @@ class WOL {
     assets.loadAssets(this, pos);
   }
 
-  // Client handling
+  // Abre los transportes: WebSocket siempre, TCP crudo solo con TCP_ENABLED=true
   run(): void {
-    log.info({ port: gameport }, "Aceptando clientes");
+    if (process.env.TCP_ENABLED === "true") listenTcp(Number(process.env.TCP_PORT || 8000), (s) => this.accept(s));
+    listenWs(Number(process.env.WS_PORT || 8001), (s) => this.accept(s));
+  }
 
-    net
-      .createServer((rawSocket) => {
-        const socket = rawSocket as GameSocket;
-        socket.name = socket.remoteAddress + ":" + socket.remotePort;
-        socket.id = randomUUID();
-        // Empieza como Client genérico; al llegar el POST, handler.js lo cambia por el de su tipo
-        let obj: AnyClient = new Client(socket, this.db, this);
-        log.debug({ socket: socket.name, id: socket.id }, "Nueva conexión");
-        //### scope handler ###
-        (obj as Client).eventTrigger.on("newScope", function () {
-          obj = (obj as Client).newObject as AnyClient;
-        });
-        //### data handler ###
-        socket.on("data", (data) => {
-          try {
-            this.packetHandler.handle(obj, data);
-          } catch (e) {
-            log.error({ err: e }, "Error al procesar datos");
-          }
-        });
-        //### error handler ###
-        socket.on("error", function (e) {
-          log.warn({ err: e }, "Error de socket");
-        });
-
-        //### disconnection handler ###
-        socket.on("close", () => {
-          this.removeClientObj(obj);
-        });
-
-        socket.on("end", () => {
-          this.removeClientObj(obj);
-        });
-      })
-      .listen(gameport as number, "0.0.0.0"); // PORT del .env llega como texto, como en el original
+  // Conexión nueva (TCP o WebSocket). Empieza como Client genérico; al llegar el POST, el handler la
+  // cambia por la de su tipo y avisa con "newScope"
+  accept(socket: GameSocket): Connection {
+    let obj: AnyClient = new Client(socket, this.db, this);
+    log.debug({ socket: socket.name, id: socket.id }, "Nueva conexión");
+    (obj as Client).eventTrigger.on("newScope", function () {
+      obj = (obj as Client).newObject as AnyClient;
+    });
+    return {
+      data: (chunk) => {
+        try {
+          this.packetHandler.handle(obj, chunk);
+        } catch (e) {
+          log.error({ err: e }, "Error al procesar datos");
+        }
+      },
+      close: () => this.removeClientObj(obj),
+    };
   }
 
   //### Timers ###

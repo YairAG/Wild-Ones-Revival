@@ -6,7 +6,12 @@ import path = require("path");
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { MongoClient, type Document } from "mongodb";
 import serveAssets = require("../../scripts/serve-assets");
-import { TestClient, sleep } from "./client";
+import { WebSocket } from "ws";
+import net = require("net");
+import { TestClient, sleep, type Transport } from "./client";
+
+/** Los tests corren una vez por cada transporte */
+const TRANSPORTS: Transport[] = ["tcp", "ws"];
 
 const ROOT = path.join(__dirname, "../..");
 const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
@@ -24,8 +29,11 @@ function user(id: number, dname: string, extra: object = {}) {
   };
 }
 
-async function startTestServer(users: Document[]) {
-  const port = 18000 + Math.floor(Math.random() * 1000); // aleatorio: evita choques con procesos viejos
+async function startTestServer(users: Document[], transport: Transport) {
+  // Puertos aleatorios: evitan choques con procesos viejos
+  const tcpPort = 18000 + Math.floor(Math.random() * 1000);
+  const wsPort = tcpPort + 1000;
+  const port = transport === "tcp" ? tcpPort : wsPort;
   const mongod = await MongoMemoryServer.create({ binary: { version: MONGO_VERSION } });
   const mongoUrl = mongod.getUri().replace(/\/?$/, "/emu");
   const mongoClient = await MongoClient.connect(mongoUrl);
@@ -40,7 +48,9 @@ async function startTestServer(users: Document[]) {
     cwd: ROOT,
     env: {
       ...process.env,
-      PORT: String(port),
+      TCP_ENABLED: "true",
+      TCP_PORT: String(tcpPort),
+      WS_PORT: String(wsPort),
       MONGO_URL: mongoUrl,
       LOG_LEVEL: "debug",
       ASSETS_URL: `http://127.0.0.1:${(assetServer.address() as import("net").AddressInfo).port}/`,
@@ -50,7 +60,8 @@ async function startTestServer(users: Document[]) {
   server.stdout.on("data", (d) => (log += d));
   server.stderr.on("data", (d) => (log += d));
 
-  for (let i = 0; !log.includes('"msg":"Aceptando clientes"'); i++) {
+  // Listo cuando abrió los dos transportes
+  for (let i = 0; log.split('"msg":"Aceptando clientes"').length < 3; i++) {
     if (i > 300) throw new Error("El servidor no arrancó en 15 s:\n" + log);
     await sleep(50);
   }
@@ -58,6 +69,7 @@ async function startTestServer(users: Document[]) {
   const clients: TestClient[] = [];
   return {
     port,
+    transport,
     db,
     log: () => log,
     // Líneas de log (JSON de pino) ya parseadas; ignora lo que no sea JSON
@@ -72,10 +84,26 @@ async function startTestServer(users: Document[]) {
       }),
 
     async connect(urlPath: string) {
-      const c = new TestClient(port, urlPath);
+      const c = new TestClient(port, urlPath, transport);
       await c.connect();
       clients.push(c);
       return c;
+    },
+
+    // Abre una conexión sin el POST inicial, envía `text` y devuelve la primera respuesta (texto crudo)
+    raw(text: string): Promise<string> {
+      return new Promise((resolve, reject) => {
+        if (transport === "tcp") {
+          const socket = net.connect(port, "127.0.0.1", () => socket.write(text));
+          socket.on("data", (d) => (socket.destroy(), resolve(d.toString())));
+          socket.on("error", reject);
+        } else {
+          const ws = new WebSocket(`ws://127.0.0.1:${port}`);
+          ws.on("open", () => ws.send(text));
+          ws.on("message", (d) => (ws.terminate(), resolve(d.toString())));
+          ws.on("error", reject);
+        }
+      });
     },
 
     // Abre lobby y hace login; devuelve el cliente ya sin los mensajes del login
@@ -109,5 +137,5 @@ async function startTestServer(users: Document[]) {
 
 type TestEnv = Awaited<ReturnType<typeof startTestServer>>;
 
-export { startTestServer, user, sleep };
+export { startTestServer, user, sleep, TRANSPORTS };
 export type { TestEnv };
