@@ -10,7 +10,7 @@ de Playdom/Disney.
     pnpm install
     cp apps/server/.env.example apps/server/.env   # y ajusta los valores
     pnpm assets            # en otra terminal: sirve apps/server/assets/json en http://localhost:8080/
-    pnpm start             # TCP en 0.0.0.0:$PORT (8000 por defecto)
+    pnpm start             # WebSocket en el puerto WS_PORT (8001); TCP opcional (TCP_ENABLED)
     pnpm test              # no necesita Mongo instalado
     pnpm dev               # como start, pero reinicia al guardar cambios (tsx)
     pnpm typecheck         # revisa tipos con TypeScript

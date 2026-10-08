@@ -18,7 +18,33 @@ Convenciones:
 
 ## 1. Transporte
 
-TCP plano en `0.0.0.0:PORT` (8000 por defecto). Un navegador no puede conectarse directo (necesita WebSocket).
+Dos transportes con **exactamente el mismo protocolo** (todo lo de este documento vale para los dos):
+
+| Transporte | Dirección | Cuándo |
+|---|---|---|
+| WebSocket | `ws://host:WS_PORT` (8001 por defecto) | Siempre activo. Es el que usa un navegador. |
+| TCP crudo | `host:TCP_PORT` (8000 por defecto) | Solo con `TCP_ENABLED=true`. |
+
+En **WebSocket**, cada mensaje WebSocket se trata como un trozo de datos del socket TCP:
+
+- El primer mensaje del cliente es el mismo `POST /ballistic/<tipo>?... HTTP/1.1\r\n...\r\n\r\n` (1.2). La ruta
+  de la URL del WebSocket no importa.
+- Después, cada mensaje WebSocket lleva uno o más mensajes `000018{...}` (1.3).
+- El servidor responde en **texto** o **binario** según cómo le habló el cliente por última vez. Ruffle
+  (el emulador de Flash) usa binario, así que puede conectarse directo, sin `websockify`.
+
+Ejemplo desde un navegador:
+
+```js
+const ws = new WebSocket("ws://localhost:8001");
+ws.onopen = () => {
+  ws.send("POST /ballistic/lobby?session=x HTTP/1.1\r\n\r\n");
+  const msg = JSON.stringify({ command: "ping" });
+  ws.send(String(msg.length).padStart(6, "0") + msg);
+};
+// Primera respuesta: "Originality is undetected plagiarism.\r\n\r\n000022{\"command\":\"ping_ack\"}"
+ws.onmessage = (e) => console.log(e.data);
+```
 
 ### 1.1 Política de Flash
 

@@ -3,7 +3,7 @@
     pnpm test
 
 No hace falta instalar Mongo: los tests traen el suyo. La primera vez descargan MongoDB (unos cientos de MB,
-queda en caché), después tardan ~10 s.
+queda en caché), después tardan ~20 s.
 
 Por defecto usan MongoDB 9.0.2. Para probar otra versión:
 
@@ -22,11 +22,12 @@ arreglamos ese bug, se actualiza el test en el mismo commit que el arreglo.
 
 ## Cómo funcionan
 
-Cada archivo de test arranca su propio entorno con `test/helpers/server.ts`:
+Cada archivo de test corre **dos veces**, una por transporte (`tcp` y `ws`), y cada vez arranca su propio
+entorno con `test/helpers/server.ts`:
 
 1. Un **MongoDB temporal** (`mongodb-memory-server`) con jugadores de prueba (clave `clave-<nombre>`).
 2. Los **datos de juego inventados** de `test/fixtures/assets/`, servidos con `scripts/serve-assets.ts`.
-3. El **servidor real** (`app.ts` con tsx) como otro proceso, en un puerto aleatorio.
+3. El **servidor real** (`app.ts` con tsx) como otro proceso, con TCP y WebSocket en puertos aleatorios.
 
 Después se conectan con `test/helpers/client.ts`, un cliente mínimo que habla el protocolo.
 

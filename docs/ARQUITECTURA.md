@@ -52,7 +52,8 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 | Archivo | Qué hace |
 |---|---|
 | `app.ts` | Punto de entrada. Solo crea el servidor y lo arranca. |
-| `wol/index.ts` | El "gerente": abre el puerto TCP, recibe conexiones, guarda clientes y partidas, y cada 100 ms avanza todas las partidas. |
+| `wol/index.ts` | El "gerente": abre los transportes, recibe conexiones, guarda clientes y partidas, y cada 100 ms avanza todas las partidas. |
+| `wol/transport.ts` | Transportes: WebSocket y TCP. Los dos entregan los datos al handler igual. |
 | `wol/assets.ts` | Descarga los `.dat` al arrancar y rellena las plantillas de `properties/`. |
 | `wol/matchmaking.ts` | Valida las opciones de partida y busca o crea la partida adecuada (`findSlot`). |
 | `handler/index.ts` | El "mesero": recibe los datos del socket, separa los mensajes, los valida y llama a la función de su `command`. |
@@ -80,8 +81,8 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 
 ## Dependencias
 
-Tres en ejecución: `mongodb` (driver 7), `pino` (logs) y `@wildones/protocol` (que usa `zod`). Lo demás viene de Node:
-`crypto` (uuid y md5), `fetch` (descargar los `.dat`), `net` (TCP).
+Cuatro en ejecución: `mongodb` (driver 7), `pino` (logs), `ws` (WebSocket) y `@wildones/protocol` (que usa `zod`). Lo demás viene de Node:
+`crypto` (uuid y md5), `fetch` (descargar los `.dat`), `net` (TCP). Más `ws` para WebSocket.
 
 ## Datos del juego (assets)
 
@@ -118,7 +119,9 @@ El servidor usa **pino** (`helpers/log.ts`): cada línea es un JSON con nivel, h
 
 | Variable | Por defecto | Para qué |
 |---|---|---|
-| `PORT` | `8000` | Puerto TCP del servidor |
+| `WS_PORT` | `8001` | Puerto WebSocket (siempre activo) |
+| `TCP_ENABLED` | `false` | `true` para abrir también el TCP crudo |
+| `TCP_PORT` | `8000` | Puerto TCP (si está activo) |
 | `MONGO_URL` | `mongodb://localhost:27017/emu` | Base de datos de jugadores |
 | `ASSETS_URL` | `http://localhost/assets/json/` | De dónde descargar los `.dat` |
 | `LOG_LEVEL` | `info` | Detalle de los logs (`debug`, `info`, `warn`, `error`) |
