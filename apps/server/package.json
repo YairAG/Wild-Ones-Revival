@@ -14,9 +14,7 @@
   },
   "dependencies": {
     "@wildones/protocol": "workspace:*",
-    "jimp": "0.2.28",
-    "mongodb": "7.7.0",
-    "request": "^2.88.2"
+    "mongodb": "7.7.0"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.3.0"

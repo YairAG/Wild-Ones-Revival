@@ -1,6 +1,5 @@
 // Datos del juego (.dat): se descargan uno por uno desde ASSETS_URL al arrancar y se rellenan las
 // plantillas de properties/. Cuando están todos, se abre el servidor TCP.
-import request = require("request");
 import AccessoriesProperties = require("../properties/accessories.properties.js");
 import WeaponProperties = require("../properties/weapon.properties.js");
 import MapProperties = require("../properties/map.properties.js");
@@ -16,13 +15,19 @@ type Item = Record<string, unknown>;
 // Descarga el asset número `pos` de la lista y, al terminar, el siguiente
 export function loadAssets(wol: WOL, pos: number): void {
   const item = wol.assetsList[pos];
-  request(wol.assetsURL + item + ".dat?cachev=" + wol.assetsCacheVersion, function (_error: unknown, _response: unknown, body: string) {
-    wol.assetsObj[item] = JSON.parse(body);
-    console.log("Loaded asset: " + item);
+  // Si la descarga falla, body queda undefined y JSON.parse lanza: el proceso se cae (como con request)
+  fetch(wol.assetsURL + item + ".dat?cachev=" + wol.assetsCacheVersion)
+    .then(
+      (res) => res.text(),
+      () => undefined,
+    )
+    .then(function (body) {
+      wol.assetsObj[item] = JSON.parse(body as string);
+      console.log("Loaded asset: " + item);
 
-    if (wol.assetsList.length - 1 > pos) loadAssets(wol, pos + 1);
-    else onAssetsLoaded(wol);
-  });
+      if (wol.assetsList.length - 1 > pos) loadAssets(wol, pos + 1);
+      else onAssetsLoaded(wol);
+    });
 }
 
 function onAssetsLoaded(wol: WOL): void {
@@ -40,7 +45,11 @@ function onAssetsLoaded(wol: WOL): void {
 }
 
 // Crea una plantilla por elemento, le copia los campos del .dat y las indexa por `key` (type o name)
-function byKey<T extends object>(items: unknown, Template: new () => T, key: string): Record<string, T> {
+function byKey<T extends object>(
+  items: unknown,
+  Template: new () => T,
+  key: string,
+): Record<string, T> {
   const result: Record<string, T> = {};
   for (const item of items as Item[]) {
     const obj = Object.assign(new Template(), item);
