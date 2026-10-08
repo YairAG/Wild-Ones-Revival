@@ -71,7 +71,7 @@ POST /ballistic/<tipo>?<query> HTTP/1.1\r\n
 - Las cabeceras se ignoran. Lo que va después de `\r\n\r\n` se procesa como mensajes.
 - **lobby / ladder**: la query se ignora.
 - **game**: la query se lee **por posición**, no por nombre: el 1.er valor es el `gameId` y el 2.º la
-  `session`. Ejemplo: `POST /ballistic/game?gameId=Sink-or-Swim_2_60000_10000_0&session=e9uyp HTTP/1.1`.
+  `session`. Ejemplo: `POST /ballistic/game?gameId=Sink-or-Swim_2_60000_10000_0&session=0b4d7a1e-9c2f-4e8a-b5d3-6f1a2c7e9d40 HTTP/1.1`.
 
 ### 1.3 Mensajes
 
@@ -179,7 +179,7 @@ Algunos campos numéricos viajan como **16 caracteres hex** = un `double` IEEE-7
 | `setNewPlayerFlag` | `{}` | `player.nw = -1`, guarda en Mongo. | — |
 | `modify_pet` | `{"petid":"1","color1":"0x..","color2":"0x..","name":"Rex"}` | Cambia colores y nombre de la mascota, guarda. | — |
 | `change_pet` | `{"name":"2"}` (`name` = id de mascota) | Cambia `currentPet` si la tiene, guarda. | `player` |
-| `quick_play` | `{"mapName":"Sink or Swim","playerCount":2,"gameDuration":1,"turnDuration":10}` | Valores no permitidos por `Config` se cambian por uno al azar; mapa inexistente → `"Sink or Swim"`. Busca o crea partida. Genera `session` nueva y la guarda en Mongo como `gkey`. | `join` (2.2) |
+| `quick_play` | `{"mapName":"Sink or Swim","playerCount":2,"gameDuration":1,"turnDuration":10}` | Valores no permitidos por `Config` se cambian por uno al azar; mapa inexistente → `"Sink or Swim"`. Busca o crea partida. Genera `session` nueva (UUID) y la guarda en Mongo como `gkey`. | `join` (2.2) |
 | `game_name_check` | `{"name":"Mi sala"}` | Solo `[a-zA-Z0-9- ]`; si no, nada. | `{"command":"game_name_return","name":"Mi sala","value":1}` (1 libre, 0 ocupado) |
 | `create_game` | `{"gameName":"Mi sala","mapName":..,"playerCount":..,"gameDuration":..,"turnDuration":..}` | Espacios → `-`. Si ya existe responde `game_name_return` con `value:0`. Si no, crea la partida con ese id. | `join` |
 | `join_game` | `{"gameName":"Mi sala"}` | Si existe y no está corriendo, mete al cliente y responde. Si no, nada. | `join` |
