@@ -66,6 +66,11 @@ los valida al crear el usuario.
   campos del documento no los toca.** También agrega `command` y `online` (ver BUGS).
 - `gkey`: el pase de un solo uso para entrar a una partida. Lo crea y lo borra el servidor; el backend no debe
   tocarlo.
+- `presence`: dónde está el jugador ahora: `"playing"` (en una partida), `"lobby"` (solo en el lobby) u
+  `"offline"`. Se actualiza al entrar o salir del lobby o de una partida, y al arrancar el servidor todos pasan a
+  `"offline"`. El backend puede leerlo (p. ej. para la lista de amigos) pero no debe escribirlo. Si no existe,
+  el jugador nunca se ha conectado: tratarlo como `"offline"`. No confundir con `status`, que es la marca de
+  "listo" de la sala que usa el cliente original.
 
 ### Lo que el servidor nunca lee
 
