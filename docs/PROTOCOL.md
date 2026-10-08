@@ -202,6 +202,9 @@ El token lo emite tu backend de cuentas; este servidor solo lo verifica (nunca r
 - Firma **HS256** con el secreto compartido `JWT_SECRET`. Otros algoritmos (incluido `none`) se rechazan.
 - `sub` = `id` numérico del usuario en la colección `users` (como texto, p. ej. `"142603"`).
 - Se respeta `exp` si viene (recomendado: tokens cortos).
+- **Compatibilidad con el cliente SWF original:** el SWF manda `{"command":"logIn","dname":"...","snum":"..."}`.
+  Si no hay `token`, el servidor usa `snum` como JWT (y `dname` se ignora: el nombre sale de Mongo). Para el
+  SWF, el token se le pasa en el parámetro `snum` de su URL: `publicV1.swf?dname=<nombre>&snum=<jwt>&net=M`.
 - Si el token es inválido, expiró o el usuario no existe: **no se responde nada** y queda un `warn` en el log.
 
 Ejemplo de emisión en el backend (Node, `jsonwebtoken`):
