@@ -23,7 +23,10 @@ cada uno se corrige después en su propio commit.
 - **`chat` sin filtro**: se reenvía el objeto tal cual, con cualquier campo que mande el cliente.
 - ~~**`gkey` débil**~~ (arreglado): era `Math.random().toString(36).substring(7)` (~5-6 caracteres); ahora es
   `crypto.randomUUID()`, y es de un solo uso: se borra (de forma atómica) al entrar a la partida.
-- **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command` y `online`.
+- **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command` y `online`. También el
+  `status` de la sala ("ready" tras `on_ready`), que se vuelve a cargar al entrar a la siguiente partida: el
+  jugador podría aparecer "listo" sin haberlo marcado (solo visual: la partida empieza con 2 jugadores sin
+  mirar quién está listo). El valor inicial "playing" viene del registro original.
 
 ## Errores que lanzan excepción (atrapada, el comando no hace nada)
 
