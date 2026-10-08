@@ -1,6 +1,6 @@
 // Identificación de jugadores:
 // - logIn (lobby): verifica el JWT que emite el backend de cuentas; sub = id del usuario en Mongo.
-// - start_server_connect (partida): compara la session de la URL con el gkey que generó el lobby en "join".
+// - start_server_connect (partida): consume el pase (gkey) que generó el lobby en "join"; sirve una sola vez.
 // Este servidor nunca recibe ni guarda contraseñas.
 import jwt = require("jsonwebtoken");
 import type LobbyClient = require("../client/client.lobby.js");
@@ -29,7 +29,10 @@ function verifyToken(token: string): number | null {
   }
 }
 
-export function handleLogin(client: LobbyClient | GameClient, data: Msg<LobbyMessage | GameMessage, "logIn">): void {
+export function handleLogin(
+  client: LobbyClient | GameClient,
+  data: Msg<LobbyMessage | GameMessage, "logIn">,
+): void {
   const id = verifyToken(data.token);
   if (id === null) return; // como antes con una clave mala: no se responde nada
 
@@ -48,28 +51,32 @@ export function handleLogin(client: LobbyClient | GameClient, data: Msg<LobbyMes
   });
 }
 
-export function handleStartServerConnect(client: GameClient, data: Msg<GameMessage, "start_server_connect">, wol: WOL): void {
+export function handleStartServerConnect(
+  client: GameClient,
+  data: Msg<GameMessage, "start_server_connect">,
+  wol: WOL,
+): void {
   //what happens if it connects after the game restarted?
   //what happens if i connect after the slot is full!?
   if (!client) return;
-  client.db.count({ dname: data.userId, gkey: client.gameSession }, function (n) {
-    if (n !== undefined && n > 0) {
-      client.db.fetch({ dname: data.userId, gkey: client.gameSession }, function (doc) {
-        if (!doc) return;
-        log.info({ dname: doc.dname }, "Entró por la conexión game");
-        if (!client.getGame()) return;
-        if (client.setupPlayer(doc) == -1 || !client.player.id) return;
-
-        if (client.getGame().isFull()) {
-          client.gameId = wol.findSimilarSlot(client.getGame());
-        }
-
-        client.getGame().addClient(client);
-        client.sendGamePlayers();
-        client.sendToGame(client.player);
-        client.updateGame();
-        client.getGame().stopGameStart();
-      });
+  // El pase (gkey) se consume: sirve una sola vez. Para volver a entrar hay que pedir otro "join" en el lobby
+  client.db.consumeGameKey(data.userId, client.gameSession, function (doc) {
+    if (!doc) {
+      log.warn({ dname: data.userId }, "Pase de partida inválido o ya usado");
+      return;
     }
+    log.info({ dname: doc.dname }, "Entró por la conexión game");
+    if (!client.getGame()) return;
+    if (client.setupPlayer(doc) == -1 || !client.player.id) return;
+
+    if (client.getGame().isFull()) {
+      client.gameId = wol.findSimilarSlot(client.getGame());
+    }
+
+    client.getGame().addClient(client);
+    client.sendGamePlayers();
+    client.sendToGame(client.player);
+    client.updateGame();
+    client.getGame().stopGameStart();
   });
 }

@@ -17,19 +17,39 @@ class Database {
   }
 
   update(condition: Filter<UserDoc>, data: Partial<UserDoc>): void {
-    database.collection<UserDoc>("users").updateOne(condition, { $set: data }).catch(function () {});
+    database
+      .collection<UserDoc>("users")
+      .updateOne(condition, { $set: data })
+      .catch(function () {});
   }
 
   count(condition: Filter<UserDoc>, callback: (n?: number) => void): void {
-    database.collection<UserDoc>("users").countDocuments(condition).then(callback, function () {
-      callback();
-    });
+    database
+      .collection<UserDoc>("users")
+      .countDocuments(condition)
+      .then(callback, function () {
+        callback();
+      });
+  }
+
+  // Busca al usuario con ese pase de partida y lo borra en la misma operación (atómica): dos conexiones con
+  // el mismo pase no pueden entrar las dos
+  consumeGameKey(dname: string, gkey: string, callback: (doc: UserDoc | null) => void): void {
+    database
+      .collection<UserDoc>("users")
+      .findOneAndUpdate({ dname, gkey }, { $set: { gkey: null } })
+      .then(callback, function () {
+        callback(null);
+      });
   }
 
   fetch(condition: Filter<UserDoc>, callback: (doc: UserDoc | null) => void): void {
-    database.collection<UserDoc>("users").findOne(condition).then(callback, function () {
-      callback(null);
-    });
+    database
+      .collection<UserDoc>("users")
+      .findOne(condition)
+      .then(callback, function () {
+        callback(null);
+      });
   }
 }
 

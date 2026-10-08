@@ -161,6 +161,13 @@ function suite(transport: Transport) {
         { id: 2, x: 300, y: 100 },
       ]);
       assert.deepEqual(start.playerlist.map((p: Message) => p.dname), ["Ana", "Beto"]);
+
+      // El pase es de un solo uso: se borró de Mongo y reusarlo no deja entrar
+      await waitForUser("Ana", (u) => u.gkey === null);
+      const intruder = await connect(`/ballistic/game?gameId=${joinA.id}&session=${joinA.session}`);
+      intruder.send({ command: "start_server_connect", userId: "Ana" });
+      await assert.rejects(intruder.next("player", 500));
+      assert.ok(env.logs().some((l) => l.msg === "Pase de partida inválido o ya usado" && l.dname === "Ana"));
     });
 
     await t.test("solo se reenvían las acciones del jugador en turno", async () => {
