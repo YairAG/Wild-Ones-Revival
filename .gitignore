@@ -1,2 +1,7 @@
 node_modules/
 logs/*.txt
+logs/*.log
+.env
+
+# Datos originales del juego (Playdom). Solo en local, nunca en el repo.
+assets/

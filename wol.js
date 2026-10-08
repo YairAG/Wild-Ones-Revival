@@ -1,7 +1,7 @@
 "use strict";
 
 var
-    gameport                = 8000,
+    gameport                = process.env.PORT || 8000,
     UUID 					= require('node-uuid'),
     net                     = require('net'),
     request                 = require('request'),
@@ -36,7 +36,7 @@ class WOL{
 	    this.packetHandler = new PacketHandler(this);
 	
 	    //assets
-	    this.assetsURL = "http://localhost/assets/json/";
+	    this.assetsURL = process.env.ASSETS_URL || "http://localhost/assets/json/";
 	    this.assetsCacheVersion = "debug_0002";
 	    this.assetsList = ["Config", "Accessories", "Crate", "Gifts", "Levels", "Maps", "Other", "PetFoods", "Pets", "WeaponsGrid"];
 	    this.assetsObj = {};

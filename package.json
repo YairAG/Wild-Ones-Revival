@@ -5,7 +5,10 @@
   "description": "Servidor de juego Wild Ones (lobby, partidas, turnos). Basado en Wild Ones Private Wars / Wild Ones Latin.",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node --env-file-if-exists=.env app.js"
+  },
+  "engines": {
+    "node": ">=22.9"
   },
   "dependencies": {
     "jimp": "0.2.28",
