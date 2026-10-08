@@ -132,7 +132,7 @@ El servidor usa **pino** (`helpers/log.ts`): cada línea es un JSON con nivel, h
 1. El cliente abre una conexión **lobby** y hace `logIn` con el JWT de tu backend. El server lo verifica y
    responde con los datos del jugador.
 2. Pide `quick_play`. El server busca o crea una partida y responde `join` con un `id` de partida y una
-   `session` (un UUID aleatorio guardado en Mongo como `gkey`; vale hasta que el jugador pide otra partida).
+   `session` (un UUID aleatorio guardado en Mongo como `gkey`; es de un solo uso).
 3. El cliente abre una segunda conexión **game** con ese `id` y `session`, y manda `start_server_connect`.
 4. Con 2 o más jugadores, la partida pasa a `starting`; 5 s después manda `startGame` con una semilla
    aleatoria y el orden de turnos.

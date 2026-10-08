@@ -237,7 +237,7 @@ Casi todos los comandos de juego solo se aceptan si el que envía es el **jugado
 
 | command | Payload | Efecto |
 |---|---|---|
-| `start_server_connect` | `{"userId":"Ana"}` (`userId` = `dname`) | Busca en Mongo `{dname: userId, gkey: session de la URL}`. Si la partida está llena, busca otra igual. Añade al jugador. |
+| `start_server_connect` | `{"userId":"Ana"}` (`userId` = `dname`) | Busca en Mongo `{dname: userId, gkey: session de la URL}` y borra el `gkey` en la misma operación: **cada session sirve una sola vez** (para reconectar hay que pedir otro `join` en el lobby). Si no coincide, no responde nada. Si la partida está llena, busca otra igual. Añade al jugador. |
 
 Respuestas, en orden:
 1. Al que entra: el `player` de cada otro jugador.

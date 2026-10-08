@@ -17,7 +17,7 @@ cada uno se corrige después en su propio commit.
   llamado `hasOwnProperty` hace fallar el reenvío (se pierde para todos).
 - **`chat` sin filtro**: se reenvía el objeto tal cual, con cualquier campo que mande el cliente.
 - ~~**`gkey` débil**~~ (arreglado): era `Math.random().toString(36).substring(7)` (~5-6 caracteres); ahora es
-  `crypto.randomUUID()`. Sigue sin ser de un solo uso: vale hasta el próximo `join` del mismo jugador.
+  `crypto.randomUUID()`, y es de un solo uso: se borra (de forma atómica) al entrar a la partida.
 - **`updatePlayerData` guarda el objeto `player` entero** en Mongo, incluidos `command` y `online`.
 
 ## Errores que lanzan excepción (atrapada, el comando no hace nada)
