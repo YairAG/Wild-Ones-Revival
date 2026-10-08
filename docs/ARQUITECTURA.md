@@ -72,7 +72,7 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 | `properties/*.ts` | Plantillas con valores por defecto para armas, mapas, mascotas, accesorios y comida. Se rellenan con los `.dat`. |
 | `types/` | Tipos compartidos (socket, documento de Mongo, config). Solo tipos. |
 | `helpers/utils.ts` | Utilidades: codificar números como texto hex, generar claves aleatorias, md5. |
-| `helpers/logger.ts` | Escribe logs a archivo (está roto, ver BUGS). |
+| `helpers/log.ts` | El logger (pino). |
 | `helpers/point.ts`, `physics/`, `weapons/`, `field.ts` | Física del lado servidor **a medio hacer y desactivada**. |
 | `scripts/serve-assets.ts` | Sirve los `.dat` por HTTP (`pnpm assets`). |
 | `test/` | Tests (ver [TESTS.md](TESTS.md)). |
@@ -80,7 +80,7 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 
 ## Dependencias
 
-Solo dos en ejecución: `mongodb` (driver 7) y `@wildones/protocol` (que usa `zod`). Lo demás viene de Node:
+Tres en ejecución: `mongodb` (driver 7), `pino` (logs) y `@wildones/protocol` (que usa `zod`). Lo demás viene de Node:
 `crypto` (uuid y md5), `fetch` (descargar los `.dat`), `net` (TCP).
 
 ## Datos del juego (assets)
@@ -97,6 +97,23 @@ Lo que realmente se usa:
 - `Maps`: nombre y posiciones iniciales. El mapa `"Sink or Swim"` debe existir (está fijo en el código).
 - `WeaponsGrid`, `Pets`, `Accessories`: precios y moneda para la tienda; `timeAfter` de armas para el turno.
 
+## Logs
+
+El servidor usa **pino** (`helpers/log.ts`): cada línea es un JSON con nivel, hora, mensaje y datos.
+
+| Nivel | Qué registra |
+|---|---|
+| `debug` | Detalle interno: datos crudos recibidos, clientes creados, ticks, búsquedas de partida |
+| `info` | Eventos normales: servidor arrancado, login, partida que empieza o termina |
+| `warn` | Intentos raros: mensaje inválido, login fallido, color o arma no permitidos |
+| `error` | Excepciones |
+
+- `LOG_LEVEL` en el `.env` elige desde qué nivel se muestra (por defecto `info`).
+- `pnpm dev` los muestra legibles (`pino-pretty`); `pnpm start` los deja en JSON.
+- Cualquier campo `snum` (la clave) sale como `[Redacted]`. Ojo: el log `debug` "Datos recibidos" muestra el
+  mensaje crudo, clave incluida, hasta que la tarea 8 la cambie por un JWT.
+- Ya no se escribe nada en archivos.
+
 ## Configuración (`.env`)
 
 | Variable | Por defecto | Para qué |
@@ -104,6 +121,7 @@ Lo que realmente se usa:
 | `PORT` | `8000` | Puerto TCP del servidor |
 | `MONGO_URL` | `mongodb://localhost:27017/emu` | Base de datos de jugadores |
 | `ASSETS_URL` | `http://localhost/assets/json/` | De dónde descargar los `.dat` |
+| `LOG_LEVEL` | `info` | Detalle de los logs (`debug`, `info`, `warn`, `error`) |
 | `JWT_SECRET` | — | Para la auth con JWT (tarea 8) |
 
 ## Flujo de una partida
