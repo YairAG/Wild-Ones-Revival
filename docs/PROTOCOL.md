@@ -4,6 +4,10 @@ Sacado del código actual (`handler.js`, `slot.js`, `wol.js`, `client/*.js`). To
 puede verificar en esos archivos. Lo que hacía el **cliente** Flash con cada mensaje no está en este repo; se
 marca como *desconocido* cuando importa.
 
+Los tipos de TypeScript y los esquemas de validación de todos estos mensajes están en el paquete
+`@wildones/protocol` (`packages/protocol/src/`): `client.ts` (cliente → servidor) y `server.ts`
+(servidor → cliente). Se pueden importar desde el frontend.
+
 Convenciones:
 - **C→S**: cliente a servidor. **S→C**: servidor a cliente.
 - "Se ignora" = el servidor no hace nada y no responde.
@@ -55,7 +59,10 @@ Cada mensaje = **6 dígitos con la longitud** + **JSON**:
 - Puede haber varios mensajes seguidos en un mismo paquete.
 - Si un mensaje llega partido en varios paquetes, solo se reensambla en conexiones `game` (máx. 8 trozos).
 - JSON inválido: se loguea la excepción y se descarta el resto del paquete.
-- Un `command` desconocido se ignora.
+- Cada mensaje se **valida** contra el esquema de su tipo de conexión (`packages/protocol/src/client.ts`).
+  Si no cumple (campo con tipo incorrecto, falta un campo obligatorio, `command` desconocido o de otra
+  conexión), se loguea `!! Mensaje inválido descartado: ...` y se ignora. Los campos extra se permiten y se
+  conservan.
 
 La **primera** respuesta del servidor en cada conexión va precedida de una pseudo-cabecera:
 

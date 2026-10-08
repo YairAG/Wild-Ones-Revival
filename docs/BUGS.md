@@ -36,6 +36,8 @@ cada uno se corrige después en su propio commit.
 - Premios de fin de partida solo con más de 2 jugadores; `game_stats` siempre va en 0.
 - `sendTick` reenvía el último `synch_check` del jugador activo pero sobrescribe `tick` con el tick del servidor.
   Posible causa del desync observado (sin verificar).
+- `slot.js` `update`: compara con `new Date().now` (siempre `undefined`), así que el aviso "haven't received
+  tick" nunca se dispara.
 - `handlePlayerKill` y `handleRequestSynch` existen pero no están enrutados.
 
 ## Protocolo / transporte

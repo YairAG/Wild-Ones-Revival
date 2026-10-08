@@ -5,9 +5,17 @@ var LobbyClient = require("./client/client.lobby.js"),
     GameClient = require("./client/client.game.js"),
     Utils = require('./helpers/utils.js'),
     Logger = require('./helpers/logger.js'),
-    fs = require('fs');
+    fs = require('fs'),
+    Protocol = require('@wildones/protocol');
 
 var DEBUG = true;
+
+// Valida un mensaje entrante contra su esquema; los inválidos se loguean y se descartan
+function isValid(schema, packet){
+    var result = schema.safeParse(packet);
+    if(!result.success) console.log("!! Mensaje inválido descartado: " + JSON.stringify(packet) + "\n" + result.error.message);
+    return result.success;
+}
 
 
 class Handler{
@@ -162,6 +170,7 @@ class Handler{
     //### Packet handling ###
 
     handleLobbyCommand(client, packet){
+        if(!isValid(Protocol.lobbyMessage, packet)) return;
         switch(packet.command) {
             case "logIn":
                 console.log("handling login");
@@ -233,6 +242,7 @@ class Handler{
     }
 
     handleLadderCommand(client, packet){
+        if(!isValid(Protocol.ladderMessage, packet)) return;
         switch(packet.command){
             case "ping":
                 this.handlePing(client);
@@ -241,6 +251,7 @@ class Handler{
     }
 
     handleGameCommand(client, packet){
+        if(!isValid(Protocol.gameMessage, packet)) return;
         //console.log("PACKET HANDLING: " + packet + "\n");
         client.lastMessageTime = Date.now();
         switch(packet.command){

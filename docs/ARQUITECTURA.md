@@ -27,6 +27,22 @@ Es un **workspace de pnpm**: un repo con varios paquetes que comparten `node_mod
 
 Los comandos (`pnpm start`, `pnpm test`, …) se corren desde la raíz.
 
+## TypeScript
+
+- Se usa **TypeScript 6.0** (`~6.0.3`), no la 7: la 7 (reescrita en Go) no trae la API de JavaScript que
+  necesita `typescript-eslint`.
+- `tsconfig.base.json` en la raíz tiene la config común; cada paquete la extiende.
+- El servidor todavía es JavaScript: `allowJs` + `checkJs` hacen que TypeScript revise los `.js` sin
+  convertirlos. Se migra archivo por archivo: helpers → properties → client → slot → handler → wol.
+- `packages/protocol` ya es TypeScript estricto. Se compila a `packages/protocol/dist/` (`pnpm build:protocol`,
+  que `pnpm start`, `dev` y `test` corren solos antes).
+- En desarrollo y en los tests el servidor corre con **tsx**, que ejecuta `.ts` sin compilar.
+
+## Validación de mensajes
+
+`handler.js` valida cada mensaje entrante con los esquemas **Zod** de `@wildones/protocol` antes de
+atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.md).
+
 ## Archivos del servidor (`apps/server/`)
 
 | Archivo | Qué hace |

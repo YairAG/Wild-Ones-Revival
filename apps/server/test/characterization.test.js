@@ -109,6 +109,17 @@ test("login con clave incorrecta no responde nada", async () => {
   await assert.rejects(lobby.next("setPlayer", 500));
 });
 
+test("mensajes inválidos se descartan y se loguean; el servidor sigue respondiendo", async () => {
+  const lobby = await connect("/ballistic/lobby?session=x");
+  lobby.send({ command: "buy_ammo", ammoType: 5 }); // ammoType debe ser texto y falta ammoCount
+  lobby.send({ command: "comando_inventado" });
+  lobby.send({ command: "ping" });
+  await lobby.next("ping_ack");
+  assert.equal(lobby.messages.length, 0);
+  assert.ok(serverLog.includes('Mensaje inválido descartado: {"command":"buy_ammo","ammoType":5}'));
+  assert.ok(serverLog.includes('Mensaje inválido descartado: {"command":"comando_inventado"}'));
+});
+
 test("partida completa: login → quick_play → 2 jugadores → turno → game over", async (t) => {
   const lobbyA = await connect("/ballistic/lobby?session=x");
   const lobbyB = await connect("/ballistic/lobby?session=x");
@@ -120,7 +131,7 @@ test("partida completa: login → quick_play → 2 jugadores → turno → game 
     assert.equal(setPlayer.dname, "Ana");
     assert.equal(setPlayer.id, 1);
     assert.equal(setPlayer.gold, 1000);
-    assert.equal(setPlayer.online, 3); // conexiones lobby abiertas (incluye la del test anterior)
+    assert.equal(setPlayer.online, 4); // conexiones lobby abiertas (incluye las de los tests anteriores)
     assert.equal((await lobbyA.next("player")).dname, "Ana");
 
     lobbyB.send({ command: "logIn", dname: "Beto", snum: "clave-Beto" });
