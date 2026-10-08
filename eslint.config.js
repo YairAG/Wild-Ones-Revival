@@ -7,4 +7,6 @@ module.exports = [
   js.configs.recommended,
   { files: ["**/*.js"], languageOptions: { sourceType: "commonjs", globals: globals.node } },
   ...tseslint.configs.recommended.map((config) => ({ ...config, files: ["**/*.ts"] })),
+  // import x = require() mantiene la semántica de CommonJS mientras convivan archivos .js y .ts
+  { files: ["**/*.ts"], rules: { "@typescript-eslint/no-require-imports": ["error", { allowAsImport: true }] } },
 ];
