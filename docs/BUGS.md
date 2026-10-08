@@ -46,6 +46,8 @@ cada uno se corrige después en su propio commit.
   empatados. (El original probablemente hacía "muerte súbita" con agua subiendo: `disaster: flood` en los
   mapas. Queda para cuando exista `packages/sim`.)
 - Premios de fin de partida solo con más de 2 jugadores; `game_stats` siempre va en 0.
+- **`wins`, `losses` y `gamecount` nunca cambian**: se leen de Mongo pero ninguna parte del servidor los suma al
+  terminar una partida (las estadísticas de la mascota siempre muestran 0).
 - `sendTick` reenvía el último `synch_check` del jugador activo pero sobrescribe `tick` con el tick del servidor.
   Posible causa del desync observado (sin verificar).
 - `slot/index.ts` `update`: compara con `new Date().now` (siempre `undefined`), así que el aviso "haven't received
