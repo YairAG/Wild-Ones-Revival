@@ -1,0 +1,66 @@
+{
+  "id": 142603,
+  "usr": "EjemploUsuario",
+  "pw": "<NO guardar contraseña aquí; usa tu backend>",
+  "email": "ejemplo@correo.com",
+  "nw": -1,
+  "level": 0,
+  "currentPet": "3",
+  "login_streak": 1,
+  "playerStatus": "playing",
+  "status": "playing",
+  "net": "M",
+  "snum": "<NO guardar contraseña aquí; usa tu backend>",
+  "lkey": "<NO guardar contraseña aquí; usa tu backend>",
+  "gamecount": 100,
+  "gold": 1000,
+  "treats": 200,
+  "hp": 500000,
+  "wins": 0,
+  "sesscount": 0,
+  "losses": 0,
+  "speed": 5,
+  "attack": 100,
+  "defence": 5,
+  "jump": 5,
+  "xp": 0,
+  "userAccessories": [
+    "top_playdom_black"
+  ],
+  "durability": {
+    "head_ninjaA_white": 30
+  },
+  "ownedPets": {
+    "1": {
+      "gender": "M",
+      "id": 1,
+      "pers": "brave",
+      "name": "yair1",
+      "accessories": [
+        "top_playdom_black"
+      ],
+      "color2": "0xE1E2E3",
+      "type": "dog",
+      "deaths": 0,
+      "kills": 0,
+      "color1": "0x6C6C6C"
+    }
+  },
+  "userWeaponsOwned": {},
+  "userWeaponsEquipped": [
+    "walk",
+    "bone",
+    "superjump",
+    "climb",
+    "punch",
+    "dig",
+    "mortar"
+  ],
+  "allowedMaps": [
+    "Crash Landing"
+  ],
+  "command": "player",
+  "online": 1,
+  "dname": "EjemploUsuario",
+  "gkey": "e9uyp"
+}

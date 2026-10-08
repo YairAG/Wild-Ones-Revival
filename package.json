@@ -1,0 +1,17 @@
+{
+  "name": "wildones-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Servidor de juego Wild Ones (lobby, partidas, turnos). Basado en Wild Ones Private Wars / Wild Ones Latin.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "jimp": "0.2.28",
+    "md5": "^2.2.1",
+    "mongodb": "2.2.33",
+    "node-uuid": "^1.4.8",
+    "request": "^2.88.2"
+  }
+}
