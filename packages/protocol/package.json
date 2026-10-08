@@ -1,6 +1,6 @@
 {
   "name": "wildones-protocol",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tipos y validación (Zod) de los mensajes entre cliente y servidor de Wild Ones Revival.",
   "license": "MIT",
   "repository": {

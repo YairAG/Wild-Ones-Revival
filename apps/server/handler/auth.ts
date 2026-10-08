@@ -33,7 +33,8 @@ export function handleLogin(
   client: LobbyClient | GameClient,
   data: Msg<LobbyMessage | GameMessage, "logIn">,
 ): void {
-  const id = verifyToken(data.token);
+  // token: clientes nuevos. snum: el cliente SWF original (ahí manda la "clave", que ahora es el JWT)
+  const id = verifyToken(data.token ?? data.snum ?? "");
   if (id === null) return; // como antes con una clave mala: no se responde nada
 
   client.db.fetch({ id }, function (doc) {

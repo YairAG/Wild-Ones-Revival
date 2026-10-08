@@ -98,7 +98,8 @@ function suite(transport: Transport) {
       assert.equal(setPlayer.online, 4); // conexiones lobby abiertas (incluye las de los tests anteriores)
       assert.equal((await lobbyA.next("player")).dname, "Ana");
 
-      lobbyB.send({ command: "logIn", token: env.token(2) });
+      // Beto entra como el cliente SWF original: dname + el JWT en snum
+      lobbyB.send({ command: "logIn", dname: "Beto", snum: env.token(2) });
       await lobbyB.next("setPlayer");
       await lobbyB.next("player");
 

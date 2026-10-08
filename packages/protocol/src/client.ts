@@ -18,8 +18,9 @@ const gameDetails = {
 };
 
 // Compartidos por varias conexiones
-// token: JWT del backend de cuentas (HS256), con sub = id del usuario
-const logIn = msg("logIn", { token: z.string() });
+// JWT del backend de cuentas (HS256, sub = id del usuario) en `token`. El cliente SWF original lo manda en
+// `snum` (su campo de clave), así que también se acepta ahí
+const logIn = msg("logIn", { token: z.string().optional(), snum: z.string().optional() });
 const ping = msg("ping");
 
 export const lobbyMessage = z.discriminatedUnion("command", [
