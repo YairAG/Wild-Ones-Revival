@@ -280,7 +280,7 @@ Si alguien sale durante `starting`, vuelve a `idle`.
   3. A todos: registro `changeTurn` (2.3).
 - Siguiente jugador: el siguiente `id` mayor que esté vivo; si no hay, el menor.
 - `turn_complete` del jugador en turno termina su turno en el siguiente tick (máximo 100 ms).
-- `gameDuration` no se aplica.
+- Al llegar a `gameDuration` (en ticks: `gameDuration / 10`), la partida termina (5.5).
 
 ### 5.4 C→S durante la partida
 
@@ -328,8 +328,9 @@ Si alguien sale durante `starting`, vuelve a `idle`.
 
 ### 5.5 Fin de partida
 
-Se revisa cada 100 ms. Termina si quedan ≤ 1 conectados o ≤ 1 vivos:
-1. Orden final: el vivo primero y luego los muertos (el último en morir antes).
+Se revisa cada 100 ms. Termina si quedan ≤ 1 conectados, ≤ 1 vivos o se acabó el tiempo (`gameDuration`):
+1. Orden final: los vivos primero (por id; puede haber varios si se acabó el tiempo) y luego los muertos (el
+   último en morir antes).
 2. Si había **más de 2** jugadores: XP `9 × (6 − puesto)` y oro `12 × (6 − puesto)` (puesto desde 0).
 3. A cada uno: `game_stats` (todo en 0 salvo `players`):
 

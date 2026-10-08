@@ -42,7 +42,9 @@ cada uno se corrige después en su propio commit.
 - `projectile` resta munición aunque el jugador no tenga ese arma (`mortar` es gratis): `undefined - 1 = NaN`,
   que se guarda en Mongo y viaja como `null`. Fijado en los tests.
 - ~~`turn_complete` no hacía nada~~ (arreglado): ahora el jugador en turno puede terminar su turno.
-- `gameDuration` no se aplica: la partida no tiene límite de tiempo.
+- ~~`gameDuration` no se aplicaba~~ (arreglado): al acabarse el tiempo termina la partida, con los vivos
+  empatados. (El original probablemente hacía "muerte súbita" con agua subiendo: `disaster: flood` en los
+  mapas. Queda para cuando exista `packages/sim`.)
 - Premios de fin de partida solo con más de 2 jugadores; `game_stats` siempre va en 0.
 - `sendTick` reenvía el último `synch_check` del jugador activo pero sobrescribe `tick` con el tick del servidor.
   Posible causa del desync observado (sin verificar).

@@ -35,6 +35,7 @@ Después se conectan con `test/helpers/client.ts`, un cliente mínimo que habla 
 |---|---|
 | `characterization.test.ts` | Política de Flash, ladder, login, mensajes inválidos y una partida completa: `quick_play` → entrar → `startGame` → movimiento, chat, apuntar, `on_ready`, `synchronization` → disparo → cambio de turno → `player_died` → `game_stats` + `endGame` |
 | `turns.test.ts` | Partidas de 3: `turn_complete` y quién puede reportar muertes (solo el jugador en turno); una muerte repetida no se cuenta dos veces |
+| `game-time.test.ts` | Límite de tiempo de partida. Test directo de `Slot` con jugadores simulados (adelanta el reloj a mano) |
 | `lobby.test.ts` | Tienda (armas, accesorios), mascotas (comprar, cambiar, borrar, modificar), ruleta, popups, armas equipadas y salas con nombre |
 
 Rutas relativas a `apps/server/test/`.

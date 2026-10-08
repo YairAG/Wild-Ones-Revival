@@ -186,6 +186,13 @@ class Slot {
         this.refresh();
       }
     } else {
+      // Se acabó el tiempo de partida (gameDuration en ms; el tick avanza 1 cada 10 ms)
+      if (this.tick >= this.gameDuration / 10) {
+        log.info({ gameId: this.gameId }, "Fin de partida por tiempo");
+        this.endGame();
+        return;
+      }
+
       this.checkIfTurnIsOver();
       //if only one player remains in game
       //send game over
@@ -442,9 +449,10 @@ class Slot {
     //give awards, show screens etc. first
     log.info({ gameId: this.gameId }, "Fin de partida");
 
-    const playerOrder = this.deadPlayers.reverse();
-    const playerAlive = this.getPlayerAlive();
-    if (playerAlive) playerOrder.unshift(playerAlive.player.id);
+    // Orden final: los vivos (por id; más de uno si se acabó el tiempo) y luego los muertos, del último en
+    // morir al primero
+    const alive = Object.values(this.clients).filter((c) => !c.isDead()).map((c) => c.player.id);
+    const playerOrder = [...alive, ...this.deadPlayers.reverse()];
 
     if (playerOrder.length > 2) {
       for (let i = 0; i < playerOrder.length; i++) {
@@ -563,12 +571,6 @@ class Slot {
 
   getPlayerIds() {
     return playerIds(this);
-  }
-
-  getPlayerAlive(): GameClient | null {
-    for (const key in this.clients) if (!this.clients[key].isDead()) return this.clients[key];
-
-    return null;
   }
 
   getGameRecord(cmd: "changeTurn" | "endGame") {
