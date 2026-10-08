@@ -1,0 +1,314 @@
+// Conexión dentro de una partida: tiene el avatar del jugador, premios y envío de estadísticas
+import Avatar = require("./extensions/avatar.js");
+import type Client = require("./client.abstract.js");
+import type Database = require("../database.js");
+import type WOL = require("../wol.js");
+import type { Player } from "@wildones/protocol";
+import type { GameSocket, UserDoc } from "../types";
+
+class GameClient {
+  declare sock: GameSocket;
+  declare db: Database;
+  declare WOL: WOL;
+  declare newPacketHeader: string;
+  declare connectionType: string;
+  declare initialized: boolean;
+  declare mapLoaded: boolean;
+  declare tempBuffer: string;
+  declare tempBufferLen: number;
+  declare awaitingData: boolean;
+  declare dataParts: number;
+  declare id: string;
+  declare loggedIn: boolean;
+  declare player: Player;
+  declare avatar: Avatar;
+  declare lastMessageTime: number;
+  declare shotThisTurn: boolean;
+  declare startingXP: number;
+  declare startingGold: number;
+  declare gameId: string | null;
+  declare gameSession: string;
+  declare disconnected?: boolean; // nunca se asigna
+
+  constructor(clientRef: Client) {
+    /* Events */
+    /* Point data to here */
+
+    clientRef.newObject = this;
+
+    /* References */
+    this.sock = clientRef.sock;
+    this.db = clientRef.db;
+    this.WOL = clientRef.WOL;
+
+    /* Connection details */
+    this.newPacketHeader = "Originality is undetected plagiarism.\r\n\r\n";
+    this.connectionType = clientRef.connectionType;
+    this.initialized = false;
+    this.mapLoaded = false; //reset this
+
+    /* Buffers and settings */
+    this.tempBuffer = "";
+    this.tempBufferLen = 0;
+    this.awaitingData = false;
+    this.dataParts = 0;
+
+    /* Client data */
+    this.id = clientRef.id;
+
+    /* Client state */
+    this.loggedIn = false;
+
+    /* Player data */
+    this.player = {} as Player; // se rellena en setupPlayer
+    this.avatar = new Avatar(this);
+
+    /* Trackers */
+    this.lastMessageTime = 0;
+    this.shotThisTurn = false;
+
+    /* Rewards */
+    this.startingXP = 0;
+    this.startingGold = 0;
+
+    /* Slot data */
+    this.gameId = null;
+    this.gameSession = "";
+
+    console.log(">> Initialized game client");
+  }
+
+  // ### initialization functions ###
+  setupPlayer(doc: UserDoc | null): number {
+    if (!doc) {
+      return -1;
+    }
+
+    this.player.id = doc.id;
+    this.player.nw = doc.nw;
+    this.player.level = doc.level;
+    this.player.currentPet = doc.currentPet;
+    this.player.login_streak = doc.login_streak;
+    this.player.playerStatus = doc.playerStatus;
+    this.player.status = doc.status;
+    this.player.net = doc.net;
+    this.player.snum = doc.snum;
+    this.player.gamecount = doc.gamecount;
+    this.player.gold = doc.gold;
+    this.player.treats = doc.treats;
+    this.player.hp = doc.hp;
+    this.player.wins = doc.wins;
+    this.player.sesscount = doc.sesscount;
+    this.player.losses = doc.losses;
+    this.player.speed = doc.speed;
+    this.player.attack = doc.attack;
+    this.player.defence = doc.defence;
+    this.player.jump = doc.jump;
+    this.player.xp = doc.xp;
+    this.player.userAccessories = doc.userAccessories;
+    this.player.durability = doc.durability;
+    this.player.ownedPets = doc.ownedPets;
+    this.player.userWeaponsOwned = doc.userWeaponsOwned;
+    this.player.userWeaponsEquipped = doc.userWeaponsEquipped;
+    this.player.allowedMaps = doc.allowedMaps;
+    this.player.dname = doc.dname;
+    this.player.command = "player";
+    this.player.online = this.WOL.getLobbyLoad();
+    console.log(">> " + this.player.dname + " entered game");
+    this.avatar.initialize();
+    return 1;
+  }
+
+  //### adapters ###
+
+  updateGame(): void {
+    this.getGame().sendPacket(this.getGame().getString("game"));
+  }
+
+  setMapLoadStatus(v: boolean): void {
+    this.mapLoaded = v;
+  }
+
+  updateCoordinates(x: number, y: number): void {
+    this.avatar.X = x;
+    this.avatar.Y = y;
+  }
+
+  updateVelocities(vx: number, vy: number): void {
+    this.avatar.Vx = vx;
+    this.avatar.Vy = vy;
+  }
+
+  resetTurnChanges(): void {
+    this.avatar.alreadyShot = false;
+    this.avatar.locked = false;
+  }
+
+  addXP(amount: number): void {
+    this.player.xp += amount;
+
+    this.sendUpdate();
+    this.updatePlayerData();
+  }
+
+  addGold(amount: number, update?: boolean): void {
+    this.player.gold += amount;
+    if (update) {
+      this.sendUpdate();
+      this.updatePlayerData();
+    }
+  }
+
+  addTreats(amount: number, update?: boolean): void {
+    this.player.treats += amount;
+    if (update) {
+      this.sendUpdate();
+      this.updatePlayerData();
+    }
+  }
+
+  //### checkers ###
+
+  ownsPet(id: string | number): boolean {
+    return this.player.ownedPets[id] != null;
+  }
+
+  isCurrentPlayer(): boolean {
+    return this.getGame().currentPlayer == this.player.id;
+  }
+
+  isDead(): boolean {
+    return this.avatar.dead;
+  }
+
+  // ### getters ###
+
+  getGame() {
+    return this.WOL.getGame(this.gameId);
+  }
+
+  sendProjectileReward(): void {
+    this.addXP(Math.floor(Math.random() * 10 + 1));
+  }
+
+  sendGameOverReward(_rank: number): void {
+    //this.addGold(Config.goldSet[rank - 1], false);
+    //this.addTreats(Config.treatSet[rank - 1], true);
+  }
+
+  // Le manda al jugador los datos de los demás jugadores de la partida
+  sendGamePlayers(): void {
+    const users = this.WOL.getGame(this.gameId).getClients();
+    for (const usrKey in users) {
+      const el = users[usrKey];
+      if (el.player.id != this.player.id) {
+        this.sendPacket(el.player);
+      }
+    }
+  }
+
+  sendToGame(packet: object): void {
+    this.getGame().sendPacket(packet);
+  }
+
+  sendStartGame(): void {
+    const cmd = {
+      command: "startGame",
+      randomSeed: this.getGame().randomSeed,
+      co: this.getGame().getPlayerIds(),
+      currentPlayer: this.getGame().getCurrentPlayer(),
+      tick: this.getGame().getTick(),
+      playerlist: this.getGame().getStatusCollection(),
+    };
+
+    this.sendPacket(cmd);
+  }
+
+  sendServerTick(val1: number, val2: number): void {
+    const cmd = {
+      id: -1,
+      command: "set_tick",
+      value: val1,
+      turnEndTick: val2,
+      tick: 0,
+    };
+
+    this.sendPacket(cmd);
+  }
+
+  sendUpdate(): void {
+    this.sendPacket(this.player);
+    this.WOL.updateLobbyPlayer(this.player);
+  }
+
+  sendChatMessage(msg: string): void {
+    const cmd = {
+      command: "chat",
+      text: msg,
+      id: 0,
+      ordered: "true",
+      tick: 0,
+      date: Date.now(),
+      dname: "Bot",
+    };
+
+    this.sendPacket(cmd);
+  }
+
+  // Estadísticas de fin de partida: todo en 0 salvo el orden de jugadores
+  sendGameStats(playerOrder: (number | string)[]): void {
+    const statsCmd = {
+      command: "game_stats",
+      startLevel: 0,
+      damageGold: 0,
+      killsGold: 0,
+      placeGold: 0,
+      damageXp: 0,
+      kills: 0,
+      endLevel: 0,
+      placeXp: 0,
+      killsXp: 0,
+      endingXP: 0,
+      players: playerOrder,
+      place: 0,
+      damage: 0,
+      startingXP: 0,
+    };
+    console.log("Send game stats!");
+    this.sendPacket(statsCmd);
+  }
+
+  // ### socket helpers ###
+  // Formato: 6 dígitos de longitud + JSON. El primer mensaje lleva además la pseudo-cabecera
+  sendPacket(packet: object): void {
+    let str = JSON.stringify(packet);
+    const len = ("000000" + str.length).slice(-6);
+
+    if (!this.initialized) {
+      this.initialized = true;
+      str = this.newPacketHeader + len + str;
+      this.write(str);
+      return;
+    }
+
+    this.write(len + str);
+  }
+
+  write(str: string): void {
+    if (!this.sock.readyState || this.disconnected) return;
+
+    try {
+      this.sock.write(str);
+    } catch (e) {
+      console.log("writing: " + e);
+    }
+  }
+
+  //### database modifiers ###
+
+  updatePlayerData(): void {
+    this.db.update({ id: this.player.id }, this.player);
+  }
+}
+
+export = GameClient;
