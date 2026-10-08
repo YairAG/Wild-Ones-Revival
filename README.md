@@ -24,6 +24,7 @@ Requiere MongoDB 4.4 a 9.0 (probado con 7.0, 8.0 y 9.0.2) y los datos del juego 
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): qué hace cada archivo y cómo fluye una partida.
 - [docs/PROTOCOL.md](docs/PROTOCOL.md): todos los mensajes entre cliente y servidor.
 - [docs/TESTS.md](docs/TESTS.md): cómo funcionan los tests.
+- [docs/SIMULACION.md](docs/SIMULACION.md): análisis de dónde debe vivir la simulación (cliente o servidor).
 - [docs/BUGS.md](docs/BUGS.md): bugs conocidos, pendientes de arreglar.
 
 ## Licencia y aviso legal
