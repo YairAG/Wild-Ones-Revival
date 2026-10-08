@@ -242,7 +242,8 @@ class Slot {
   }
 
   setPlayerDead(id: number | string): void {
-    if (this.clients[id]) {
+    // Si ya estaba muerto no se cuenta de nuevo (antes contaba dos veces y terminaba la partida antes de tiempo)
+    if (this.clients[id] && !this.clients[id].isDead()) {
       this.clients[id].avatar.dead = true;
       this.deadPlayers.push(id);
     } else {
