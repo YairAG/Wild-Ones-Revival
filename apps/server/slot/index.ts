@@ -478,7 +478,9 @@ class Slot {
     const cmd = this.getGameRecord("endGame");
     this.sendPacket(cmd);
     //now you may set it free
+    const ids = Object.values(this.clients).map((c) => c.player.id);
     this.initialize();
+    for (const id of ids) this.WOL.updatePresence(id); // ya no están en la partida
   }
 
   sendChatMessage(msg: string): void {

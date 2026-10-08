@@ -108,6 +108,9 @@ function suite(transport: Transport) {
       assert.equal(record?.id, 2);
       assert.ok(record?.ip);
       assert.equal(record?.token, undefined);
+
+      // Presencia: en el lobby
+      await waitForUser("Ana", (u) => u.presence === "lobby");
     });
 
     await t.test("ping en lobby", async () => {
@@ -162,6 +165,7 @@ function suite(transport: Transport) {
         { id: 2, x: 300, y: 100 },
       ]);
       assert.deepEqual(start.playerlist.map((p: Message) => p.dname), ["Ana", "Beto"]);
+      await waitForUser("Ana", (u) => u.presence === "playing");
 
       // El pase es de un solo uso: se borró de Mongo y reusarlo no deja entrar
       await waitForUser("Ana", (u) => u.gkey === null);
@@ -249,6 +253,11 @@ function suite(transport: Transport) {
       // Ana (viva) suma una victoria; Beto (muerto), una derrota. Los dos, una partida
       await waitForUser("Ana", (d) => d.wins == 1 && d.losses == 0 && d.gamecount == 1);
       await waitForUser("Beto", (d) => d.wins == 0 && d.losses == 1 && d.gamecount == 1);
+
+      // Presencia: al terminar vuelven al lobby (siguen con esa conexión abierta); al cerrarla, desconectados
+      await waitForUser("Ana", (u) => u.presence === "lobby");
+      lobbyA.close();
+      await waitForUser("Ana", (u) => u.presence === "offline");
     });
   });
 }

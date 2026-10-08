@@ -182,6 +182,14 @@ class WOL {
     return Object.keys(this.lobbyClients).length;
   }
 
+  // Guarda en Mongo dónde está el jugador (ver Presence en types/user.ts): en una partida, solo en el lobby
+  // o desconectado. Se llama cada vez que entra o sale de algún lado
+  updatePresence(id: number): void {
+    const playing = Object.values(this.slots).some((slot) => slot.clients[id]);
+    const inLobby = Object.values(this.lobbyClients).some((client) => client.player?.id == id);
+    this.db.update({ id }, { presence: playing ? "playing" : inLobby ? "lobby" : "offline" });
+  }
+
   //### add / remove client ###
 
   addClient(obj: AnyClient): void {
@@ -203,6 +211,7 @@ class WOL {
     } else {
       log.debug("Desconexión sin tipo de conexión");
     }
+    if ("player" in obj && obj.player?.id) this.updatePresence(obj.player.id); // solo si ya había entrado
   }
 }
 

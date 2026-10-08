@@ -13,6 +13,11 @@ class Database {
     MongoClient.connect(url).then(function (client) {
       log.info("Conectado a MongoDB");
       database = client.db();
+      // Recién arrancado nadie está conectado (por si el servidor se cayó con jugadores dentro)
+      database
+        .collection<UserDoc>("users")
+        .updateMany({ presence: { $ne: "offline" } }, { $set: { presence: "offline" } })
+        .catch(function () {});
     });
   }
 
