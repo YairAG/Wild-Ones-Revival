@@ -22,3 +22,13 @@ Requiere MongoDB 4.4 a 9.0 (probado con 7.0, 8.0 y 9.0.2) y los datos del juego 
 - [docs/PROTOCOL.md](docs/PROTOCOL.md): todos los mensajes entre cliente y servidor.
 - [docs/TESTS.md](docs/TESTS.md): cómo funcionan los tests.
 - [docs/BUGS.md](docs/BUGS.md): bugs conocidos, pendientes de arreglar.
+
+## Licencia y aviso legal
+
+Código bajo licencia MIT, ver [LICENSE](LICENSE). El código original es de Wild Ones Private Wars (autor
+"3.14", 2016); las adaptaciones de [fgpons/wo-latin-ps](https://github.com/fgpons/wo-latin-ps) se
+conservan con crédito a su autor.
+
+Proyecto de fans, de preservación y sin fines de lucro. **No tiene relación con Disney ni con Playdom**, ni
+está respaldado por ellos. "Wild Ones" y las marcas relacionadas pertenecen a sus respectivos dueños. Este
+repositorio no incluye el cliente del juego, sus gráficos, sonidos ni datos.
