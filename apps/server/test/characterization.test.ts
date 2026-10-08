@@ -234,7 +234,7 @@ function suite(transport: Transport) {
     });
 
     await t.test("cuando queda uno vivo termina la partida", async () => {
-      gameA.send({ command: "player_died", id: 2 });
+      gameB.send({ command: "player_died", id: 2 }); // es el turno de Beto: solo cuenta lo que reporta él
 
       for (const g of [gameA, gameB]) {
         const stats = await g.next("game_stats");

@@ -44,6 +44,26 @@ function suite(transport: Transport) {
     const stats = await ana.next("game_stats");
     assert.deepEqual(stats.players, [1, 2, 3]); // vivo primero, luego los muertos (el último en morir antes)
   });
+
+  test("solo cuentan las muertes que reporta el jugador en turno", async () => {
+    const [ana, beto] = await startGame(); // turno de Ana
+    const hp0 = "0000000000000000"; // 0 codificado en hex (ver PROTOCOL.md, números codificados)
+
+    // Beto no está en turno: no puede matar a Ana ni por player_died ni por synchronization
+    beto.send({ command: "player_died", id: 1 });
+    beto.send({ command: "synchronization", timeLoop: {}, avatarList: [{ player: 1, hp: hp0 }] });
+    await beto.next("set_synch"); // el set_synch se reenvía igual, pero sin matar a nadie
+    ana.send({ command: "player_died", id: 2 }); // Ana sí: si las de Beto contaran, aquí terminaría la partida
+    await sleep(500);
+    assert.ok(!ana.messages.some((m) => m.command === "game_stats"), "las muertes de Beto no deben contar");
+    const ignored = env.logs().filter((l) => l.msg === "Muerte ignorada: no la reporta el jugador en turno");
+    assert.ok(ignored.some((l) => l.from === 2 && l.id === 1));
+
+    // Ana (en turno) mata a Caro por synchronization: queda sola y termina la partida
+    ana.send({ command: "synchronization", timeLoop: {}, avatarList: [{ player: 3, hp: hp0 }] });
+    const stats = await ana.next("game_stats");
+    assert.deepEqual(stats.players, [1, 3, 2]);
+  });
 }
 
 for (const transport of TRANSPORTS) describe(transport, () => suite(transport));

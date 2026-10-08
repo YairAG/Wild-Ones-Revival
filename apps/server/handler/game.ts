@@ -8,9 +8,13 @@ import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<GameMessage, { command: C }>;
 
+function isCurrentPlayer(client: GameClient): boolean {
+  return client.getGame().currentPlayer == client.player.id;
+}
+
 // ¿Puede actuar? Es su turno y su avatar no está bloqueado (tras disparar dos veces)
 function canAct(client: GameClient): boolean {
-  return client.getGame().currentPlayer == client.player.id && !client.avatar.locked;
+  return isCurrentPlayer(client) && !client.avatar.locked;
 }
 
 export function handleChat(client: GameClient, data: Msg<"chat">): void {
@@ -188,6 +192,7 @@ export function handleLogProjectile(client: GameClient, data: Msg<"log_projectil
 }
 
 // Respuesta a "synchronization": se convierte en "set_synch" con datos del servidor y se manda a todos
+// Las muertes (hp 0) solo cuentan si las reporta el jugador en turno
 export function handleSynch(client: GameClient, data: Msg<"synchronization">): void {
   const synch = Object.assign(data, { command: "set_synch", id: "oppenheimer", gameRecord: null });
   synch.timeLoop.activeAvatar = client.getGame().currentPlayer;
@@ -202,6 +207,10 @@ export function handleSynch(client: GameClient, data: Msg<"synchronization">): v
     const player = avatar.player as string;
 
     if (hp == 0 && client.getGame().clients[player] && !client.getGame().clients[player].isDead()) {
+      if (!isCurrentPlayer(client)) {
+        log.warn({ from: client.player.id, id: player }, "Muerte ignorada: no la reporta el jugador en turno");
+        continue;
+      }
       client.getGame().setPlayerDead(player);
       log.debug({ id: player }, "Jugador muerto tras synchronization");
     }
@@ -210,8 +219,13 @@ export function handleSynch(client: GameClient, data: Msg<"synchronization">): v
   client.getGame().sendPacket(synch);
 }
 
-// bug: no valida quién envía, cualquiera puede matar a cualquiera (ver docs/BUGS.md)
+// Solo cuenta si lo reporta el jugador en turno (mitigación: el árbitro real sería el servidor simulando,
+// ver docs/SIMULACION.md)
 export function handlePlayerDied(client: GameClient, data: Msg<"player_died">): void {
+  if (!isCurrentPlayer(client)) {
+    log.warn({ from: client.player.id, id: data.id }, "Muerte ignorada: no la reporta el jugador en turno");
+    return;
+  }
   client.getGame().setPlayerDead(parseInt(String(data.id)));
 }
 
