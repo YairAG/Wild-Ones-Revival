@@ -12,7 +12,12 @@ cada uno se corrige después en su propio commit.
   token crudo.
 - ~~**`snum` se reparte a otros jugadores**~~ (arreglado): `setupPlayer` copiaba `doc.snum` al objeto `player`, que se enviaba a
   todos en la partida (`sendGamePlayers`, `sendToGame`, `playerlist` de `startGame`).
-- **`player_died` sin validar**: cualquier jugador puede mandar `{"command":"player_died","id":X}` y matar a otro.
+- **`player_died` sin validar** (mitigado): antes cualquier jugador podía matar a otro en cualquier momento, por
+  `player_died` o con `hp` 0 en `synchronization`. Ahora solo cuenta lo que reporta el jugador en turno. Sigue
+  abierto: durante **su** turno, un jugador puede declarar muerto a cualquiera. Se cierra cuando el servidor
+  simule (ver [SIMULACION.md](SIMULACION.md)).
+- ~~Muerte contada dos veces~~ (arreglado): reportar dos veces la misma muerte la contaba dos veces y, con 3+
+  jugadores, terminaba la partida con jugadores vivos.
 - **`packet.hasOwnProperty(...)` en `slot.sendPacket/sendPacketE`**: un mensaje reenviado con un campo
   llamado `hasOwnProperty` hace fallar el reenvío (se pierde para todos).
 - **`chat` sin filtro**: se reenvía el objeto tal cual, con cualquier campo que mande el cliente.

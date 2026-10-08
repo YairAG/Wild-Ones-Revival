@@ -304,7 +304,7 @@ Si alguien sale durante `starting`, vuelve a `idle`.
 | `request_synch` | — | — | Solo loguea |
 | `synch_pts` | `{"value":"<hex>"}` | — | Se ignora |
 | `synchronization` | `{"timeLoop":{..},"avatarList":[{"player":id,"hp":"<hex>",..}],..}` | no | Ver abajo |
-| `player_died` | `{"id":142604}` | no | Marca a ese jugador como muerto |
+| `player_died` | `{"id":142604}` | sí (sin lock) | Marca a ese jugador como muerto. Si no lo envía el jugador en turno, se ignora (`warn` en el log). Una muerte repetida no se cuenta dos veces |
 | `exiting` | — | no | Reenvía a los demás |
 | `log_projectile` | `{"weapon","x","y","vx","vy"}` | no | Escribe en `logs/<weapon>_xy.txt` y `_vxvy.txt` |
 | `logIn` | — | — | Roto (ver BUGS) |
@@ -323,7 +323,8 @@ Si alguien sale durante `starting`, vuelve a `idle`.
 - `command → "set_synch"`, `id → "oppenheimer"`, `gameRecord → null`.
 - `timeLoop.activeAvatar`, `timeLoop.currentTick` y `timeLoop.commandQueue = []` con datos del server.
 - En cada avatar, `isWalkingLeft`/`isWalkingRight → "false"`. Si `hp` decodificado es 0, marca muerto al
-  jugador.
+  jugador, **solo si quien envía es el jugador en turno** (si no, se ignora esa muerte y el `set_synch` se
+  manda igual).
 
 ### 5.5 Fin de partida
 
