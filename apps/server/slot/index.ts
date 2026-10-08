@@ -8,7 +8,7 @@ import { gameRecord, gameState, playerIds, playerList, playerPositions, playerPo
 import WeaponManager = require("../weapons/weapon.manager.js");
 import type Physical = require("../physics/physical.js");
 import type GameClient = require("../client/client.game.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import type WeaponProperties = require("../properties/weapon.properties.js");
 import type { GameStatus } from "@wildones/protocol";
 
@@ -46,6 +46,7 @@ class Slot {
   declare commands: unknown[];
   declare physicsObjects: Physical[];
   declare lastSynchCheck: Packet;
+  declare lastSynchTick: unknown; // lo asigna handler (synch_check); no se lee
   declare completedTurns: number;
   declare synchCmd: unknown;
   declare startingTimeout: ReturnType<typeof setTimeout> | null;
@@ -323,26 +324,26 @@ class Slot {
   //### packets ###
 
   // A todos los jugadores de la partida. Si el paquete tiene "session", se pone la de cada uno
-  sendPacket(packet: Packet): void {
+  sendPacket(packet: object): void {
     for (const key in this.clients) {
       const client = this.clients[key];
 
       if (client) {
         // eslint-disable-next-line no-prototype-builtins -- se mantiene el original (ver docs/BUGS.md)
-        if (packet.hasOwnProperty("session")) packet.session = client.gameSession;
+        if (packet.hasOwnProperty("session")) (packet as Packet).session = client.gameSession;
         client.sendPacket(packet);
       }
     }
   }
 
   // Igual que sendPacket, pero sin enviárselo a clientExcl
-  sendPacketE(packet: Packet, clientExcl: GameClient): void {
+  sendPacketE(packet: object, clientExcl: GameClient): void {
     for (const key in this.clients) {
       const client = this.clients[key];
 
       if (client && client != clientExcl) {
         // eslint-disable-next-line no-prototype-builtins -- se mantiene el original (ver docs/BUGS.md)
-        if (packet.hasOwnProperty("session")) packet.session = client.gameSession;
+        if (packet.hasOwnProperty("session")) (packet as Packet).session = client.gameSession;
         client.sendPacket(packet);
       }
     }

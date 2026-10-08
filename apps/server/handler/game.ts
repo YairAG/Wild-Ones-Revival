@@ -3,7 +3,7 @@
 import fs = require("fs");
 import Utils = require("../helpers/utils.js");
 import type GameClient = require("../client/client.game.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import type { GameMessage } from "@wildones/protocol";
 
 const DEBUG = true;
@@ -176,7 +176,7 @@ export function handlePlayerKill(client: GameClient, data: { id: number | string
 // Sin enrutar en el original (nadie la llama)
 export function handleRequestSynch(client: GameClient, data: { pid: number | string }): void {
   console.log("client whos data was req: " + data.pid);
-  // bug: getSynchCommand no existe (ver docs/BUGS.md)
+  // @ts-expect-error bug: getSynchCommand no existe (ver docs/BUGS.md)
   client.sendPacket(client.getGame().clients[data.pid].getSynchCommand());
 }
 

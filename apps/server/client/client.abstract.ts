@@ -3,7 +3,7 @@
 import events = require("events");
 import UUID = require("node-uuid");
 import type Database = require("../database.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import type { GameSocket } from "../types";
 
 class Client {

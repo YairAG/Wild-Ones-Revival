@@ -1,7 +1,7 @@
 // Lobby: buscar partida (quick_play) y salas con nombre. Responden "join" con el id de la partida y la
 // session que el cliente usará para abrir la conexión game.
 import type LobbyClient = require("../client/client.lobby.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import type { LobbyMessage } from "@wildones/protocol";
 
 const DEBUG = true;
@@ -77,7 +77,7 @@ export function handleJoinGame(client: LobbyClient, data: Msg<"join_game">, wol:
   const gameRef = wol.getGame(data.gameName);
   if (gameRef) {
     if (!gameRef.isRunning()) {
-      // bug: mete en la partida a la conexión de lobby (ver docs/BUGS.md)
+      // @ts-expect-error bug: mete en la partida a la conexión de lobby (ver docs/BUGS.md)
       gameRef.addClient(client);
       client.gameId = data.gameName;
       client.sendJoinGame();

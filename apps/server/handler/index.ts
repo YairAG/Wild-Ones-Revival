@@ -6,7 +6,7 @@ import GameClient = require("../client/client.game.js");
 import Logger = require("../helpers/logger.js");
 import Protocol = require("@wildones/protocol");
 import type Client = require("../client/client.abstract.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import * as auth from "./auth";
 import * as shop from "./shop";
 import * as rooms from "./rooms";

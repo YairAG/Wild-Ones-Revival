@@ -3,7 +3,7 @@
 import fs = require("fs");
 import type LobbyClient = require("../client/client.lobby.js");
 import type GameClient = require("../client/client.game.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import type { GameMessage, LobbyMessage } from "@wildones/protocol";
 
 type Msg<M, C> = Extract<M, { command: C }>;

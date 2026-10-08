@@ -1,7 +1,7 @@
 // Conexión de ladder (ranking). Hoy solo responde ping; setupPlayer no se llama nunca
 import type Client = require("./client.abstract.js");
 import type Database = require("../database.js");
-import type WOL = require("../wol.js");
+import type WOL = require("../wol");
 import type { Player } from "@wildones/protocol";
 import type { GameSocket, UserDoc } from "../types";
 

@@ -241,7 +241,7 @@ class Avatar extends Physical {
 
         if (Vnormal > 0.4) {
           if (aveBounceY > 0) {
-            // bug: resta un número a la partida en vez de a su tick (ver docs/BUGS.md)
+            // @ts-expect-error bug: resta un número a la partida en vez de a su tick (ver docs/BUGS.md)
             if (this.parent.getGame() - this.superJumpTick < 800) {
               //apply dust
             } else {
