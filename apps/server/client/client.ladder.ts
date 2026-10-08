@@ -61,7 +61,6 @@ class LadderClient {
     this.player.playerStatus = doc.playerStatus;
     this.player.status = doc.status;
     this.player.net = doc.net;
-    this.player.snum = doc.snum;
     this.player.gamecount = doc.gamecount;
     this.player.gold = doc.gold;
     this.player.treats = doc.treats;

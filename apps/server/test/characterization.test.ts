@@ -13,7 +13,8 @@ function suite(transport: Transport) {
   const waitForUser = (dname: string, check: (doc: Document) => boolean) => env.waitForUser(dname, check);
 
   before(async () => {
-    env = await startTestServer([user(1, "Ana"), user(2, "Beto")], transport);
+    // Ana tiene una clave vieja en su documento: nunca debe salir del servidor
+  env = await startTestServer([user(1, "Ana", { snum: "clave-vieja" }), user(2, "Beto")], transport);
   });
 
   after(() => env?.stop());
@@ -93,6 +94,7 @@ function suite(transport: Transport) {
       assert.equal(setPlayer.dname, "Ana");
       assert.equal(setPlayer.id, 1);
       assert.equal(setPlayer.gold, 1000);
+      assert.equal(setPlayer.snum, undefined); // aunque el documento en Mongo la tenga
       assert.equal(setPlayer.online, 4); // conexiones lobby abiertas (incluye las de los tests anteriores)
       assert.equal((await lobbyA.next("player")).dname, "Ana");
 

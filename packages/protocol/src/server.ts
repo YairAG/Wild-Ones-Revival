@@ -29,7 +29,6 @@ export interface Player {
   playerStatus: string;
   status: string;
   net: string;
-  snum?: string;
   gamecount: number;
   gold: number;
   treats: number;
