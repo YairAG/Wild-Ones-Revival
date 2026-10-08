@@ -5,3 +5,4 @@ node_modules/
 
 # Datos originales del juego (Playdom). Solo en local, nunca en el repo.
 /apps/server/assets/
+dist/

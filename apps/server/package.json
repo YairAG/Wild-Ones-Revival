@@ -6,6 +6,9 @@
   "main": "app.js",
   "scripts": {
     "start": "node --env-file-if-exists=.env app.js",
+    "dev": "tsx watch --env-file-if-exists=.env app.js",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
     "assets": "node scripts/serve-assets.js",
     "test": "node --test \"test/**/*.test.js\""
   },

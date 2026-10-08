@@ -57,7 +57,8 @@ before(async () => {
   assetServer = serveAssets(path.join(__dirname, "fixtures/assets"), 0);
   await once(assetServer, "listening");
 
-  server = spawn(process.execPath, ["app.js"], {
+  // --import tsx: permite que el servidor tenga archivos .ts sin compilar
+  server = spawn(process.execPath, ["--import", "tsx", "app.js"], {
     cwd: ROOT,
     env: {
       ...process.env,
