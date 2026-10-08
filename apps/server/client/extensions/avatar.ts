@@ -57,7 +57,7 @@ class Avatar extends Physical {
   declare maxFPDistance: number;
   declare fpDistance: number;
   declare dead: boolean;
-  // Asignados desde fuera (handler.js / slot.js) o nunca asignados (física desactivada)
+  // Asignados desde fuera (handler.js / slot) o nunca asignados (física desactivada)
   declare alreadyShot: boolean;
   declare locked: boolean;
   declare gA: number;

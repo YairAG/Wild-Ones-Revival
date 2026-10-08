@@ -5,7 +5,7 @@
  */
 import Mortar = require("./mortar.js");
 import type WeaponProperties = require("../properties/weapon.properties.js");
-import type Slot = require("../slot.js");
+import type Slot = require("../slot");
 
 class Weapon {
   declare slot: Slot;

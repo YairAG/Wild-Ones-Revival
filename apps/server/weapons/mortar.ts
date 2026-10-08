@@ -8,7 +8,7 @@
  */
 import Physical = require("../physics/physical.js");
 import type WeaponProperties = require("../properties/weapon.properties.js");
-import type Slot = require("../slot.js");
+import type Slot = require("../slot");
 
 interface Mortar extends Physical {
   properties: WeaponProperties;

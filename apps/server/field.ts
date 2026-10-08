@@ -1,7 +1,7 @@
 // Terreno de la partida. Debía cargar la máscara del mapa para detectar colisiones, pero la carga está
 // comentada en el original: bitmapData siempre es undefined y solo se usa como registro de explosiones.
 import Utils = require("./helpers/utils.js");
-import type Slot = require("./slot.js");
+import type Slot = require("./slot");
 import type CollisionAverage = require("./physics/collision.js");
 
 type Bitmap = { getPixelColor(x: number, y: number): number };

@@ -1,13 +1,15 @@
 // Una partida: jugadores, estado (idle → starting → running → gameover), turnos, reloj, fin y premios.
 // wol.js llama a update() cada 100 ms; cada llamada avanza el reloj (tick) 10 unidades.
-import Utils = require("./helpers/utils.js");
-import Field = require("./field.js");
-import CollisionAverage = require("./physics/collision.js");
-import WeaponManager = require("./weapons/weapon.manager.js");
-import type Physical = require("./physics/physical.js");
-import type GameClient = require("./client/client.game.js");
-import type WOL = require("./wol.js");
-import type WeaponProperties = require("./properties/weapon.properties.js");
+import Utils = require("../helpers/utils.js");
+import Field = require("../field.js");
+import type CollisionAverage = require("../physics/collision.js");
+import { collisionAverage } from "./collision";
+import { gameRecord, gameState, playerIds, playerList, playerPositions, playerPositionsAndVelocities, statusCollection } from "./messages";
+import WeaponManager = require("../weapons/weapon.manager.js");
+import type Physical = require("../physics/physical.js");
+import type GameClient = require("../client/client.game.js");
+import type WOL = require("../wol.js");
+import type WeaponProperties = require("../properties/weapon.properties.js");
 import type { GameStatus } from "@wildones/protocol";
 
 const DEBUG = false;
@@ -105,47 +107,7 @@ class Slot {
     checkField?: boolean,
     checkWalls?: boolean,
   ): CollisionAverage {
-    let avg = new CollisionAverage();
-    for (let j = 0; j < pointSet.length; j++) {
-      const fieldX = obj.X + pointSet[j].X;
-      const fieldY = obj.Y + pointSet[j].Y;
-
-      for (let i = 0; i < this.physicsObjects.length; i++) {
-        if (this.physicsObjects[i].type == "avatar" && !checkAvatar) continue;
-        if ((this.physicsObjects[i].type == "crate" || this.physicsObjects[i].type == "mine") && !checkNonAvatar) continue;
-        if (!this.physicsObjects[i].complete && this.physicsObjects[i] != obj) {
-          if (this.physicsObjects[i].checkCollision(fieldX, fieldY)) {
-            avg.sumX += pointSet[j].X;
-            avg.sumY += pointSet[j].Y;
-            avg.nP++;
-          }
-        }
-      }
-    }
-
-    if (checkWalls) {
-      for (let j = 0; j < pointSet.length; j++) {
-        const fieldX = obj.X + pointSet[j].X;
-
-        if (fieldX < 0 || fieldX > this.field.width) {
-          avg.sumX += pointSet[j].X;
-          avg.sumY += pointSet[j].Y;
-          avg.nP++;
-          avg.nWall++;
-        }
-      }
-    }
-
-    if (checkField) {
-      avg = this.field.checkCollisionPointSet(obj.X, obj.Y, pointSet, avg);
-    }
-
-    if (avg.nP != 0) {
-      avg.sumX = avg.sumX / avg.nP;
-      avg.sumY = avg.sumY / avg.nP;
-    }
-
-    return avg;
+    return collisionAverage(this, obj, pointSet, checkNonAvatar, checkAvatar, checkField, checkWalls);
   }
 
   update(): void {
@@ -303,34 +265,12 @@ class Slot {
     }
   }
 
-  getPlayerPositions(): { id: number; x: number; y: number }[] {
-    const positions: { id: number; x: number; y: number }[] = [];
-
-    for (const key in this.clients) {
-      positions.push({
-        id: this.clients[key].player.id,
-        x: this.clients[key].avatar.X,
-        y: this.clients[key].avatar.Y,
-      });
-    }
-
-    return positions;
+  getPlayerPositions() {
+    return playerPositions(this);
   }
 
-  getPlayerPositionsAndVelocities(): number[][] {
-    const collection: number[][] = [];
-
-    for (const key in this.clients) {
-      collection.push([
-        this.clients[key].player.id,
-        this.clients[key].avatar.X,
-        this.clients[key].avatar.Y,
-        this.clients[key].avatar.Vx,
-        this.clients[key].avatar.Vy,
-      ]);
-    }
-
-    return collection;
+  getPlayerPositionsAndVelocities() {
+    return playerPositionsAndVelocities(this);
   }
 
   getRemainingTicks(): number {
@@ -607,56 +547,25 @@ class Slot {
     return Object.keys(this.clients).length;
   }
 
-  getStatusCollection(): { guid: number; status: string }[] {
-    const playerList: { guid: number; status: string }[] = [];
-    for (const key in this.clients) {
-      const client = this.clients[key];
-      playerList.push({ guid: client.player.id, status: client.player.status });
-    }
-    return playerList;
+  getStatusCollection() {
+    return statusCollection(this);
   }
 
   getPlayerList() {
-    const playerList = [];
-    for (const key in this.clients) {
-      const client = this.clients[key];
-      playerList.push(client.player);
-    }
-    return playerList;
+    return playerList(this);
   }
 
   // Estado de la partida para los mensajes "game" y "join"
   getString(command: "game" | "join") {
-    return {
-      command: command,
-      status: this.status,
-      playerCount: this.getPlayerCount(),
-      min: this.min,
-      id: this.gameId,
-      map: this.mapName,
-      players: this.getStatusCollection(),
-      name: this.mapName,
-      skip: this.skip,
-      time: new Date().getTime(),
-      gameDuration: this.gameDuration,
-      turnDuration: this.turnDuration,
-      cl: this.cl,
-      sumOfLevels: this.sumOfLevels,
-      session: this.session,
-    };
+    return gameState(this, command);
   }
 
   getClients(): Record<string, GameClient> {
     return this.clients;
   }
 
-  getPlayerIds(): string[] {
-    const ids: string[] = [];
-    for (const key in this.clients) {
-      const client = this.clients[key];
-      ids.push(client.player.id.toString());
-    }
-    return ids;
+  getPlayerIds() {
+    return playerIds(this);
   }
 
   getPlayerAlive(): GameClient | null {
@@ -666,15 +575,7 @@ class Slot {
   }
 
   getGameRecord(cmd: "changeTurn" | "endGame") {
-    return {
-      randomSeed: this.randomSeed,
-      co: this.getPlayerIds(),
-      playerlist: this.getPlayerList(),
-      tick: 0,
-      currentPlayer: this.currentPlayer,
-      command: cmd,
-      why: "Because we can.",
-    };
+    return gameRecord(this, cmd);
   }
 
   //### checkers ###
