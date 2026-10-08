@@ -48,6 +48,10 @@ cada uno se corrige después en su propio commit.
 ## Código muerto
 
 - La física del servidor no corre: `step()`/`move()` comentados en `slot.js`, `Field` nunca carga el bitmap,
-  `addProjectile` no se llama y `makeWeapon` tiene otra firma. ESLint marca variables sin definir ahí
-  (`avatar.js`, `physical.js`) que hoy no se ejecutan.
+  `addProjectile` no se llama y `makeWeapon` tiene otra firma. Bugs dentro de esa física (marcados en el
+  código con `@ts-expect-error` o `// bug:`), que hoy no se ejecutan:
+  - `avatar.ts`: usa `Utils` sin importarlo (`export()`), `X`/`Y`/`gA`/`A`/`Va` sin `this.` en `step()`,
+    resta un número a la partida (`getGame() - superJumpTick`), `monkeyClimb()` sin implementar, y el setter
+    `climbing` escribe en `_climing` (typo), así que nunca cambia.
+  - `physical.ts`: `onFrame()` usa `A` sin `this.`.
 - `client/extensions/avatar_old.js`, `misc/field/field.js`, `crumbs/config.json` (no lo lee nadie).
