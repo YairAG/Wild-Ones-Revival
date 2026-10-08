@@ -3,7 +3,7 @@
 import Utils = require("../helpers/utils.js");
 import type GameClient = require("../client/client.game.js");
 import type WOL = require("../wol");
-import type { GameMessage } from "@wildones/protocol";
+import type { GameMessage } from "wildones-protocol";
 import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<GameMessage, { command: C }>;

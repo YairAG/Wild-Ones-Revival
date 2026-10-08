@@ -6,7 +6,7 @@
     "start": "pnpm build:protocol && pnpm --filter @wildones/server start",
     "dev": "pnpm build:protocol && pnpm --filter @wildones/server dev",
     "typecheck": "pnpm build:protocol && pnpm -r typecheck",
-    "build:protocol": "pnpm --filter @wildones/protocol build",
+    "build:protocol": "pnpm --filter wildones-protocol build",
     "build": "pnpm -r build",
     "assets": "pnpm --filter @wildones/server assets",
     "test": "pnpm build:protocol && pnpm -r test",

@@ -1,7 +1,7 @@
 // Lobby: tienda (armas, accesorios, mascotas), ruleta y equipamiento. Los precios salen de los .dat
 import type LobbyClient = require("../client/client.lobby.js");
 import type WOL = require("../wol");
-import type { LobbyMessage } from "@wildones/protocol";
+import type { LobbyMessage } from "wildones-protocol";
 import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<LobbyMessage, { command: C }>;

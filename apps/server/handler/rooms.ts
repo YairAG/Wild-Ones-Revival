@@ -2,7 +2,7 @@
 // session que el cliente usará para abrir la conexión game.
 import type LobbyClient = require("../client/client.lobby.js");
 import type WOL = require("../wol");
-import type { LobbyMessage } from "@wildones/protocol";
+import type { LobbyMessage } from "wildones-protocol";
 import log = require("../helpers/log.js");
 
 type Msg<C> = Extract<LobbyMessage, { command: C }>;

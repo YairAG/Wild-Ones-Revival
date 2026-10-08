@@ -2,7 +2,7 @@
 import type Client = require("./client.abstract.js");
 import type Database = require("../database.js");
 import type WOL = require("../wol");
-import type { Player } from "@wildones/protocol";
+import type { Player } from "wildones-protocol";
 import type { GameSocket, UserDoc } from "../types";
 import log = require("../helpers/log.js");
 

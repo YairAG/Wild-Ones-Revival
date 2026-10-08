@@ -15,7 +15,7 @@ import type WeaponProperties = require("../properties/weapon.properties.js");
 import type MapProperties = require("../properties/map.properties.js");
 import type PetFoodProperties = require("../properties/pet.food.properties.js");
 import type ChassisProperties = require("../properties/chassis.properties.js");
-import type { Player } from "@wildones/protocol";
+import type { Player } from "wildones-protocol";
 import type { GameConfig, GameSocket } from "../types";
 import log = require("../helpers/log.js");
 

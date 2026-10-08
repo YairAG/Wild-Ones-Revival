@@ -6,7 +6,7 @@ import jwt = require("jsonwebtoken");
 import type LobbyClient = require("../client/client.lobby.js");
 import type GameClient = require("../client/client.game.js");
 import type WOL = require("../wol");
-import type { GameMessage, LobbyMessage } from "@wildones/protocol";
+import type { GameMessage, LobbyMessage } from "wildones-protocol";
 import log = require("../helpers/log.js");
 
 type Msg<M, C> = Extract<M, { command: C }>;

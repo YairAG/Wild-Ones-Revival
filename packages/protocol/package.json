@@ -1,13 +1,21 @@
 {
-  "name": "@wildones/protocol",
+  "name": "wildones-protocol",
   "version": "0.1.0",
-  "private": true,
-  "description": "Tipos y validación (Zod) de los mensajes entre cliente y servidor de Wild Ones.",
+  "description": "Tipos y validación (Zod) de los mensajes entre cliente y servidor de Wild Ones Revival.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YairAG/Wild-Ones-Revival.git",
+    "directory": "packages/protocol"
+  },
+  "keywords": ["wild-ones", "protocol", "zod", "game"],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "tsc"
   },
   "dependencies": {
     "zod": "^4.6.5"

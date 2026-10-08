@@ -5,7 +5,7 @@ puede verificar en esos archivos. Lo que hacía el **cliente** Flash con cada me
 marca como *desconocido* cuando importa.
 
 Los tipos de TypeScript y los esquemas de validación de todos estos mensajes están en el paquete
-`@wildones/protocol` (`packages/protocol/src/`): `client.ts` (cliente → servidor) y `server.ts`
+`wildones-protocol` (`packages/protocol/src/`): `client.ts` (cliente → servidor) y `server.ts`
 (servidor → cliente). Se pueden importar desde el frontend.
 
 Convenciones:

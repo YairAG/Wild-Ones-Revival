@@ -22,7 +22,7 @@ Es un **workspace de pnpm**: un repo con varios paquetes que comparten `node_mod
 | Carpeta | Qué es |
 |---|---|
 | `apps/server/` | El servidor de juego (paquete `@wildones/server`). |
-| `packages/protocol/` | Tipos y validación de los mensajes, compartibles con el frontend (paquete `@wildones/protocol`). |
+| `packages/protocol/` | Tipos y validación de los mensajes, compartibles con el frontend (paquete `wildones-protocol`). |
 | `docs/` | Toda la documentación. |
 
 Los comandos (`pnpm start`, `pnpm test`, …) se corren desde la raíz.
@@ -44,7 +44,7 @@ Los comandos (`pnpm start`, `pnpm test`, …) se corren desde la raíz.
 
 ## Validación de mensajes
 
-`handler/index.ts` valida cada mensaje entrante con los esquemas **Zod** de `@wildones/protocol` antes de
+`handler/index.ts` valida cada mensaje entrante con los esquemas **Zod** de `wildones-protocol` antes de
 atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.md).
 
 ## Archivos del servidor (`apps/server/`)
@@ -81,7 +81,7 @@ atenderlo. Los inválidos se loguean y se descartan. Ver [PROTOCOL.md](PROTOCOL.
 
 ## Dependencias
 
-Cuatro en ejecución: `mongodb` (driver 7), `pino` (logs), `ws` (WebSocket) y `@wildones/protocol` (que usa `zod`). Lo demás viene de Node:
+Cuatro en ejecución: `mongodb` (driver 7), `pino` (logs), `ws` (WebSocket) y `wildones-protocol` (que usa `zod`). Lo demás viene de Node:
 `crypto` (uuid y md5), `fetch` (descargar los `.dat`), `net` (TCP). Más `ws` para WebSocket.
 
 ## Datos del juego (assets)

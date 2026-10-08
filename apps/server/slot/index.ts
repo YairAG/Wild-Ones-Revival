@@ -10,7 +10,7 @@ import type Physical = require("../physics/physical.js");
 import type GameClient = require("../client/client.game.js");
 import type WOL = require("../wol");
 import type WeaponProperties = require("../properties/weapon.properties.js");
-import type { GameStatus } from "@wildones/protocol";
+import type { GameStatus } from "wildones-protocol";
 import log = require("../helpers/log.js");
 
 type PointXY = { X: number; Y: number };

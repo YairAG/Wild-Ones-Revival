@@ -3,7 +3,7 @@
 import LobbyClient = require("../client/client.lobby.js");
 import LadderClient = require("../client/client.ladder.js");
 import GameClient = require("../client/client.game.js");
-import Protocol = require("@wildones/protocol");
+import Protocol = require("wildones-protocol");
 import type Client = require("../client/client.abstract.js");
 import type WOL = require("../wol");
 import * as auth from "./auth";
