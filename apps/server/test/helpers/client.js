@@ -56,6 +56,21 @@ class TestClient {
     throw new Error(`No llegó "${command}" en ${timeout} ms`);
   }
 
+  // Envía un mensaje y devuelve todo lo que respondió el servidor. Manda detrás un ping de control:
+  // el servidor atiende en orden, así que al llegar el ping_ack ya respondió al mensaje.
+  async request(message) {
+    this.messages.length = 0;
+    this.send(message);
+    this.send({ command: "ping" });
+    const end = Date.now() + 3000;
+    while (!this.messages.some((m) => m.command === "ping_ack")) {
+      if (Date.now() > end) throw new Error(`Sin respuesta a "${message.command}"`);
+      await sleep(20);
+    }
+    const i = this.messages.findIndex((m) => m.command === "ping_ack");
+    return this.messages.splice(0, i + 1).slice(0, -1);
+  }
+
   close() {
     this.socket.destroy();
   }

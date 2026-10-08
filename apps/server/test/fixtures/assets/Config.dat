@@ -4,6 +4,6 @@
   "turnTimes": [10, 15, 20],
   "maxPlayers": [2, 4, 6],
   "maxSlots": 10,
-  "petMainColors": [],
-  "petDetailColors": []
+  "petMainColors": ["6c6c6c"],
+  "petDetailColors": ["e1e2e3"]
 }

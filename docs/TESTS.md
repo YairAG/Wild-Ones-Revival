@@ -3,7 +3,7 @@
     pnpm test
 
 No hace falta instalar Mongo: los tests traen el suyo. La primera vez descargan MongoDB (unos cientos de MB,
-queda en caché), después tardan ~8 s.
+queda en caché), después tardan ~10 s.
 
 Por defecto usan MongoDB 9.0.2. Para probar otra versión:
 
@@ -22,24 +22,28 @@ arreglamos ese bug, se actualiza el test en el mismo commit que el arreglo.
 
 ## Cómo funcionan
 
-`apps/server/test/characterization.test.js`:
+Cada archivo de test arranca su propio entorno con `test/helpers/server.js`:
 
-1. Arranca un **MongoDB temporal** (`mongodb-memory-server`) y crea dos jugadores: Ana (id 1) y Beto (id 2).
-2. Sirve los **datos de juego inventados** de `apps/server/test/fixtures/assets/` con `apps/server/scripts/serve-assets.js`.
-3. Arranca el **servidor real** sin modificar (`node app.js`) como otro proceso, apuntando a lo anterior.
-4. Se conecta con `apps/server/test/client.js`, un cliente mínimo que habla el protocolo, y juega:
-   política de Flash → ladder → login fallido → login → `quick_play` de los dos → entrar a la partida →
-   `startGame` → movimiento (solo cuenta el del jugador en turno) → disparo → cambio de turno →
-   `player_died` → `game_stats` + `endGame`.
+1. Un **MongoDB temporal** (`mongodb-memory-server`) con jugadores de prueba (clave `clave-<nombre>`).
+2. Los **datos de juego inventados** de `test/fixtures/assets/`, servidos con `scripts/serve-assets.js`.
+3. El **servidor real** (`app.js` con tsx) como otro proceso, en un puerto aleatorio.
 
-## Archivos
+Después se conectan con `test/helpers/client.js`, un cliente mínimo que habla el protocolo.
+
+| Archivo | Qué cubre |
+|---|---|
+| `characterization.test.js` | Política de Flash, ladder, login, mensajes inválidos y una partida completa: `quick_play` → entrar → `startGame` → movimiento, chat, apuntar, `on_ready`, `synchronization` → disparo → cambio de turno → `player_died` → `game_stats` + `endGame` |
+| `lobby.test.js` | Tienda (armas, accesorios), mascotas (comprar, cambiar, borrar, modificar), ruleta, popups, armas equipadas y salas con nombre |
+
+Rutas relativas a `apps/server/test/`.
+
+## Archivos de apoyo
 
 | Archivo | Qué es |
 |---|---|
-| `apps/server/test/characterization.test.js` | Los tests |
-| `apps/server/test/client.js` | Cliente de prueba: conecta, envía `000018{...}` y junta las respuestas |
-| `apps/server/test/fixtures/assets/*.dat` | Datos de juego mínimos e inventados (un mapa, un arma, la config) |
-| `apps/server/scripts/serve-assets.js` | Sirve una carpeta de `.dat` por HTTP. También para uso manual: `pnpm assets` |
+| `helpers/server.js` | Arranca Mongo + assets + servidor; da `connect`, `login`, `waitForUser` |
+| `helpers/client.js` | Cliente de prueba: `send`, `next(command)` (espera un mensaje) y `request(msg)` (devuelve todo lo que respondió el servidor) |
+| `fixtures/assets/*.dat` | Datos de juego mínimos e inventados |
 
 ## Depurar
 

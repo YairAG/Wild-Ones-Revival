@@ -133,6 +133,37 @@ test("partida completa: login → quick_play → 2 jugadores → turno → game 
     assert.ok(!gameA.messages.some((m) => m.command === "move_left"));
   });
 
+  await t.test("chat, set_aim, on_ready y synchronization", async () => {
+    // chat: se reenvía tal cual a los demás, aunque no sea su turno
+    gameB.send({ command: "chat", text: "hola", extra: 1 });
+    assert.deepEqual(await gameA.next("chat"), { command: "chat", text: "hola", extra: 1 });
+
+    // set_aim: solo del jugador en turno, reenviado a los demás
+    gameA.send({ command: "set_aim", value: 1.2, power: 300 });
+    assert.deepEqual(await gameB.next("set_aim"), { command: "set_aim", value: 1.2, power: 300 });
+
+    // on_ready: marca al jugador como "ready" y manda "game" a todos
+    gameB.send({ command: "on_ready" });
+    const game = await gameA.next("game");
+    assert.deepEqual(game.players.find((p) => p.guid === 2), { guid: 2, status: "ready" });
+
+    // synchronization: el servidor lo transforma en set_synch y lo manda a todos (incluido quien lo envió)
+    const hp500 = "407F400000000000"; // 500 codificado en hex (ver PROTOCOL.md, números codificados)
+    gameA.send({
+      command: "synchronization",
+      timeLoop: { activeAvatar: 99, currentTick: 99, commandQueue: [1] },
+      avatarList: [{ player: 2, hp: hp500, isWalkingLeft: "true" }],
+    });
+    for (const g of [gameA, gameB]) {
+      const synch = await g.next("set_synch");
+      assert.equal(synch.id, "oppenheimer");
+      assert.equal(synch.gameRecord, null);
+      assert.equal(synch.timeLoop.activeAvatar, 1);
+      assert.deepEqual(synch.timeLoop.commandQueue, []);
+      assert.deepEqual(synch.avatarList, [{ player: 2, hp: hp500, isWalkingLeft: "false", isWalkingRight: "false" }]);
+    }
+  });
+
   await t.test("disparar acorta el turno y pasa al siguiente jugador", async () => {
     gameA.send({ command: "projectile", d: [10, 20], ammo_type: "mortar", crate: "false" });
 
