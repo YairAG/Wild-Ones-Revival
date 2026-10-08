@@ -47,9 +47,6 @@ importers:
       mongodb:
         specifier: 7.7.0
         version: 7.7.0
-      node-uuid:
-        specifier: ^1.4.8
-        version: 1.4.8
       request:
         specifier: ^2.88.2
         version: 2.88.2
@@ -911,11 +908,6 @@ packages:
   new-find-package-json@2.0.0:
     resolution: {integrity: sha512-lDcBsjBSMlj3LXH2v/FW3txlh2pYTjmbOXPYJD93HI5EwuLzI11tdHSIpUMmfq/IOsldj4Ps8M8flhm+pCK4Ew==}
     engines: {node: '>=12.22.0'}
-
-  node-uuid@1.4.8:
-    resolution: {integrity: sha512-TkCET/3rr9mUuRp+CpO7qfgT++aAxfDRaalQhwPFzI9BY/2rCDn6OfpZOVggi1AXfTPpfkTrg5f5WQx5G1uLxA==}
-    deprecated: Use uuid module instead
-    hasBin: true
 
   oauth-sign@0.9.0:
     resolution: {integrity: sha512-fexhUFFPTGV8ybAtSIGbV6gOkSv8UtRbDBnAyLQw4QPKkgNlsH2ByPGtMUqdWkos6YCRmAqViwgZrJc/mRDzZQ==}
@@ -2002,8 +1994,6 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
-
-  node-uuid@1.4.8: {}
 
   oauth-sign@0.9.0: {}
 

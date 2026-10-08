@@ -1,7 +1,7 @@
 // El "gerente" del servidor: carga los datos del juego, abre el puerto TCP, guarda las conexiones y las
 // partidas, y cada 100 ms avanza todas las partidas (update).
 import net = require("net");
-import UUID = require("node-uuid");
+import { randomUUID } from "crypto";
 import Database = require("../database.js");
 import PacketHandler = require("../handler");
 import Slot = require("../slot");
@@ -118,7 +118,7 @@ class WOL {
       .createServer((rawSocket) => {
         const socket = rawSocket as GameSocket;
         socket.name = socket.remoteAddress + ":" + socket.remotePort;
-        socket.id = UUID();
+        socket.id = randomUUID();
         console.log("generated socket id: " + socket.id);
         // Empieza como Client genérico; al llegar el POST, handler.js lo cambia por el de su tipo
         let obj: AnyClient = new Client(socket, this.db, this);

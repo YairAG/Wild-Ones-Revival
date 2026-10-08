@@ -1,7 +1,7 @@
 // Conexión recién abierta: todavía no se sabe si es lobby, ladder o game. Cuando llega el
 // "POST /ballistic/<tipo>", handler.js crea el cliente del tipo correcto y lo avisa con fireChangeEvent().
 import events = require("events");
-import UUID = require("node-uuid");
+import { randomUUID } from "crypto";
 import type Database = require("../database.js");
 import type WOL = require("../wol");
 import type { GameSocket } from "../types";
@@ -44,7 +44,7 @@ class Client {
     this.newObject = this;
 
     /* Characteristics */
-    this.id = UUID();
+    this.id = randomUUID();
   }
 
   fireChangeEvent(): void {
