@@ -3,12 +3,13 @@
   "private": true,
   "description": "Wild Ones Revival: servidor de juego y protocolo compartido.",
   "scripts": {
-    "start": "pnpm --filter @wildones/server start",
-    "dev": "pnpm --filter @wildones/server dev",
-    "typecheck": "pnpm -r typecheck",
+    "start": "pnpm build:protocol && pnpm --filter @wildones/server start",
+    "dev": "pnpm build:protocol && pnpm --filter @wildones/server dev",
+    "typecheck": "pnpm build:protocol && pnpm -r typecheck",
+    "build:protocol": "pnpm --filter @wildones/protocol build",
     "build": "pnpm -r build",
     "assets": "pnpm --filter @wildones/server assets",
-    "test": "pnpm -r test",
+    "test": "pnpm build:protocol && pnpm -r test",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -22,6 +23,7 @@
     "globals": "^17.13.0",
     "prettier": "^3.9.9",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1"
   }
 }

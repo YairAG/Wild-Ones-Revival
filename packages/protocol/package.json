@@ -1,0 +1,13 @@
+{
+  "name": "@wildones/protocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tipos y validación (Zod) de los mensajes entre cliente y servidor de Wild Ones.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "typecheck": "tsc --noEmit"
+  }
+}

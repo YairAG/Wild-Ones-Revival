@@ -1,8 +1,10 @@
 const js = require("@eslint/js");
 const globals = require("globals");
+const tseslint = require("typescript-eslint");
 
 module.exports = [
   { ignores: ["**/node_modules/", "**/assets/", "**/logs/", "**/dist/"] },
   js.configs.recommended,
-  { languageOptions: { sourceType: "commonjs", globals: globals.node } },
+  { files: ["**/*.js"], languageOptions: { sourceType: "commonjs", globals: globals.node } },
+  ...tseslint.configs.recommended.map((config) => ({ ...config, files: ["**/*.ts"] })),
 ];
