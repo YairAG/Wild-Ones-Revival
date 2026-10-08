@@ -52,6 +52,12 @@ test("mensajes inválidos se descartan y se loguean; el servidor sigue respondie
   const invalid = env.logs().filter((l) => l.msg === "Mensaje inválido descartado");
   assert.ok(invalid.some((l) => l.level === 40 && l.packet.command === "buy_ammo" && l.packet.ammoType === 5));
   assert.ok(invalid.some((l) => l.packet.command === "comando_inventado"));
+
+  // La clave nunca aparece en logs estructurados: pino la reemplaza por [Redacted]
+  lobby.send({ command: "logIn", dname: 5, snum: "secreto" }); // inválido: dname debe ser texto
+  await lobby.request({ command: "ping" });
+  const login = env.logs().find((l) => l.msg === "Mensaje inválido descartado" && l.packet.command === "logIn");
+  assert.equal(login?.packet.snum, "[Redacted]");
 });
 
 test("partida completa: login → quick_play → 2 jugadores → turno → game over", async (t) => {
@@ -71,6 +77,11 @@ test("partida completa: login → quick_play → 2 jugadores → turno → game 
     lobbyB.send({ command: "logIn", dname: "Beto", snum: "clave-Beto" });
     await lobbyB.next("setPlayer");
     await lobbyB.next("player");
+
+    // El registro de login guarda nombre e IP, no la clave
+    const record = env.logs().find((l) => l.msg === "Registro de login" && l.dname === "Beto");
+    assert.ok(record?.ip);
+    assert.equal(record?.snum, undefined);
   });
 
   await t.test("ping en lobby", async () => {

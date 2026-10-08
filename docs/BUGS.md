@@ -5,9 +5,11 @@ cada uno se corrige después en su propio commit.
 
 ## Seguridad
 
-- **Path traversal en `log_projectile`** (`handler/game.ts` `handleLogProjectile`): `data.weapon` viene del cliente y
-  se usa en la ruta `logs/<weapon>_xy.txt`. Un cliente puede escribir en cualquier archivo.
-- **Credenciales en logs**: `handleLogin` escribe `snum` en texto plano en `logs/glogin_log.txt` junto a la IP.
+- ~~**Path traversal en `log_projectile`**~~ (arreglado al pasar a pino: ya no se escriben archivos). Antes `data.weapon` venía del cliente y
+  se usaba en la ruta `logs/<weapon>_xy.txt`.
+- ~~**Credenciales en logs**~~ (arreglado): el registro de login ya no incluye `snum`, y pino tapa cualquier
+  campo `snum` (`[Redacted]`). Queda el log `debug` "Datos recibidos", que muestra el mensaje crudo (con la
+  clave) hasta que la tarea 8 la reemplace por un JWT.
 - **`snum` se reparte a otros jugadores**: `setupPlayer` copia `doc.snum` al objeto `player`, que se envía a
   todos en la partida (`sendGamePlayers`, `sendToGame`, `playerlist` de `startGame`).
 - **`player_died` sin validar**: cualquier jugador puede mandar `{"command":"player_died","id":X}` y matar a otro.
@@ -20,7 +22,7 @@ cada uno se corrige después en su propio commit.
 ## Errores que lanzan excepción (atrapada, el comando no hace nada)
 
 - `handler/shop.ts` `handleSetWeaponsEquipped`: usa `invalidItemLog` sin `this.` → `ReferenceError`.
-- `helpers/logger.ts`: usa `fs` sin importarlo.
+- ~~`helpers/logger.ts` usaba `fs` sin importarlo~~ (archivo eliminado al pasar a pino).
 - `wol/matchmaking.ts` `findSlot` con nombre propio: usa `tmpId` sin definir si el nombre ya existe.
 - `logIn` en una conexión `game` llama a `sendPlayerSetup`, que `GameClient` no tiene.
 - `give_medal` llama a `handleSendMedal`, que no existe.

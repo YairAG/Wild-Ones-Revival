@@ -19,8 +19,7 @@ export function handleLogin(client: LobbyClient | GameClient, data: Msg<LobbyMes
         if (!doc) return;
         log.info({ dname: doc.dname }, "Login correcto");
 
-        // bug: registra la clave en texto plano (ver docs/BUGS.md)
-        log.info({ dname: doc.dname, snum: data.snum, ip: client.sock.remoteAddress }, "Registro de login");
+        log.info({ dname: doc.dname, ip: client.sock.remoteAddress }, "Registro de login");
 
         client.loggedIn = true;
         log.debug({ loggedIn: client.loggedIn }, "Estado de login");
