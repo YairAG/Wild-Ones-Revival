@@ -7,6 +7,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import { MongoClient, type Document } from "mongodb";
 import serveAssets = require("../../scripts/serve-assets");
 import { WebSocket } from "ws";
+import jwt = require("jsonwebtoken");
 import net = require("net");
 import { TestClient, sleep, type Transport } from "./client";
 
@@ -15,11 +16,12 @@ const TRANSPORTS: Transport[] = ["tcp", "ws"];
 
 const ROOT = path.join(__dirname, "../..");
 const MONGO_VERSION = process.env.MONGO_VERSION || "9.0.2";
+const JWT_SECRET = "secreto-de-los-tests";
 
-/** Documento de jugador de prueba (clave = "clave-<dname>") */
+/** Documento de jugador de prueba (se identifica con un JWT con sub = id, ver token()) */
 function user(id: number, dname: string, extra: object = {}) {
   return {
-    id, dname, lkey: "clave-" + dname,
+    id, dname,
     nw: -1, level: 0, xp: 0, gold: 1000, treats: 200, status: "playing",
     currentPet: "1",
     ownedPets: { 1: { id: 1, name: "Rex", type: "dog", accessories: [] } },
@@ -53,6 +55,7 @@ async function startTestServer(users: Document[], transport: Transport) {
       WS_PORT: String(wsPort),
       MONGO_URL: mongoUrl,
       LOG_LEVEL: "debug",
+      JWT_SECRET,
       ASSETS_URL: `http://127.0.0.1:${(assetServer.address() as import("net").AddressInfo).port}/`,
     },
   });
@@ -106,10 +109,16 @@ async function startTestServer(users: Document[], transport: Transport) {
       });
     },
 
+    // JWT como el que emitiría el backend de cuentas. options permite firmar mal, expirarlo, etc.
+    token(id: number, options: jwt.SignOptions = {}, secret = JWT_SECRET): string {
+      return jwt.sign({}, secret, { subject: String(id), expiresIn: "1h", ...options });
+    },
+
     // Abre lobby y hace login; devuelve el cliente ya sin los mensajes del login
     async login(dname: string) {
       const c = await this.connect("/ballistic/lobby?session=x");
-      c.send({ command: "logIn", dname, snum: "clave-" + dname });
+      const id = users.find((u) => u.dname === dname)!.id;
+      c.send({ command: "logIn", token: this.token(id) });
       await c.next("player");
       return c;
     },

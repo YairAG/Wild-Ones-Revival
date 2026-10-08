@@ -1,6 +1,7 @@
 // Tests de caracterización: fijan cómo se comporta el servidor HOY (bugs incluidos), para detectar
 // cualquier cambio durante la migración. Ver docs/TESTS.md.
 import { describe, test, before, after } from "node:test";
+import jwt = require("jsonwebtoken");
 import assert = require("node:assert/strict");
 import { startTestServer, user, sleep, TRANSPORTS, type TestEnv } from "./helpers/server";
 import type { Document } from "mongodb";
@@ -43,10 +44,23 @@ function suite(transport: Transport) {
     assert.ok(ladder.sawHeader, "la primera respuesta lleva la pseudo-cabecera");
   });
 
-  test("login con clave incorrecta no responde nada", async () => {
+  test("login con token inválido no responde nada", async () => {
     const lobby = await connect("/ballistic/lobby?session=x");
-    lobby.send({ command: "logIn", dname: "Ana", snum: "mala" });
-    await assert.rejects(lobby.next("setPlayer", 500));
+    const unsigned = jwt.sign({}, "", { algorithm: "none", subject: "1" });
+    const invalid = {
+      "otro secreto": env.token(1, {}, "secreto-equivocado"),
+      expirado: env.token(1, { expiresIn: -10 }),
+      "sin firma (alg none)": unsigned,
+      "usuario inexistente": env.token(999),
+      "sub no numérico": env.token(1, { subject: "ana" }),
+      "no es un JWT": "hola",
+    };
+    for (const [why, token] of Object.entries(invalid)) {
+      lobby.send({ command: "logIn", token });
+      await assert.rejects(lobby.next("setPlayer", 300), Error, why);
+    }
+    assert.ok(env.logs().some((l) => l.msg === "Token inválido" && l.reason === "jwt expired"));
+    assert.ok(env.logs().some((l) => l.msg === "Login fallido: el usuario no existe" && l.id === 999));
   });
 
   test("mensajes inválidos se descartan y se loguean; el servidor sigue respondiendo", async () => {
@@ -60,10 +74,11 @@ function suite(transport: Transport) {
     assert.ok(invalid.some((l) => l.level === 40 && l.packet.command === "buy_ammo" && l.packet.ammoType === 5));
     assert.ok(invalid.some((l) => l.packet.command === "comando_inventado"));
 
-    // La clave nunca aparece en logs estructurados: pino la reemplaza por [Redacted]
-    lobby.send({ command: "logIn", dname: 5, snum: "secreto" }); // inválido: dname debe ser texto
+    // Tokens y claves nunca aparecen en logs estructurados: pino los reemplaza por [Redacted]
+    lobby.send({ command: "logIn", token: 5, snum: "secreto" }); // inválido: token debe ser texto
     await lobby.request({ command: "ping" });
     const login = env.logs().find((l) => l.msg === "Mensaje inválido descartado" && l.packet.command === "logIn");
+    assert.equal(login?.packet.token, "[Redacted]");
     assert.equal(login?.packet.snum, "[Redacted]");
   });
 
@@ -73,7 +88,7 @@ function suite(transport: Transport) {
     let gameA: TestClient, gameB: TestClient, joinA: Message, joinB: Message;
 
     await t.test("login en lobby devuelve setPlayer y luego player", async () => {
-      lobbyA.send({ command: "logIn", dname: "Ana", snum: "clave-Ana" });
+      lobbyA.send({ command: "logIn", token: env.token(1) });
       const setPlayer = await lobbyA.next("setPlayer");
       assert.equal(setPlayer.dname, "Ana");
       assert.equal(setPlayer.id, 1);
@@ -81,14 +96,15 @@ function suite(transport: Transport) {
       assert.equal(setPlayer.online, 4); // conexiones lobby abiertas (incluye las de los tests anteriores)
       assert.equal((await lobbyA.next("player")).dname, "Ana");
 
-      lobbyB.send({ command: "logIn", dname: "Beto", snum: "clave-Beto" });
+      lobbyB.send({ command: "logIn", token: env.token(2) });
       await lobbyB.next("setPlayer");
       await lobbyB.next("player");
 
-      // El registro de login guarda nombre e IP, no la clave
-      const record = env.logs().find((l) => l.msg === "Registro de login" && l.dname === "Beto");
+      // El log de login guarda id, nombre e IP, nunca el token
+      const record = env.logs().find((l) => l.msg === "Login correcto" && l.dname === "Beto");
+      assert.equal(record?.id, 2);
       assert.ok(record?.ip);
-      assert.equal(record?.snum, undefined);
+      assert.equal(record?.token, undefined);
     });
 
     await t.test("ping en lobby", async () => {

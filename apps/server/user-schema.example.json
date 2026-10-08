@@ -1,7 +1,6 @@
 {
   "id": 142603,
   "usr": "EjemploUsuario",
-  "pw": "<NO guardar contraseña aquí; usa tu backend>",
   "email": "ejemplo@correo.com",
   "nw": -1,
   "level": 0,
@@ -10,8 +9,6 @@
   "playerStatus": "playing",
   "status": "playing",
   "net": "M",
-  "snum": "<NO guardar contraseña aquí; usa tu backend>",
-  "lkey": "<NO guardar contraseña aquí; usa tu backend>",
   "gamecount": 100,
   "gold": 1000,
   "treats": 200,

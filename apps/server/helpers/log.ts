@@ -2,7 +2,7 @@
 // Nivel con LOG_LEVEL (debug, info, warn, error); por defecto info. `pnpm dev` lo muestra legible.
 import pino from "pino";
 
-// redact: si algún objeto logueado trae la clave (snum), se reemplaza por [Redacted]
-const log = pino({ level: process.env.LOG_LEVEL || "info", redact: ["snum", "*.snum"] });
+// redact: si algún objeto logueado trae una clave (snum) o un token, se reemplaza por [Redacted]
+const log = pino({ level: process.env.LOG_LEVEL || "info", redact: ["snum", "*.snum", "token", "*.token"] });
 
 export = log;

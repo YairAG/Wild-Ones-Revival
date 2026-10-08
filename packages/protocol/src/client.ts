@@ -18,7 +18,8 @@ const gameDetails = {
 };
 
 // Compartidos por varias conexiones
-const logIn = msg("logIn", { dname: z.string(), snum: z.string() });
+// token: JWT del backend de cuentas (HS256), con sub = id del usuario
+const logIn = msg("logIn", { token: z.string() });
 const ping = msg("ping");
 
 export const lobbyMessage = z.discriminatedUnion("command", [
