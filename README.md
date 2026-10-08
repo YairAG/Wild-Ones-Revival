@@ -9,13 +9,16 @@ de Playdom/Disney.
 
     pnpm install
     cp .env.example .env   # y ajusta los valores
+    pnpm assets            # en otra terminal: sirve assets/json en http://localhost:8080/
     pnpm start             # TCP en 0.0.0.0:$PORT (8000 por defecto)
+    pnpm test              # no necesita Mongo instalado
 
-Requiere MongoDB (driver 2.2: Mongo 4.4 sí, 6+ probablemente no) y los datos del juego servidos por HTTP
-en `ASSETS_URL`.
+Requiere MongoDB (driver 2.2: Mongo 4.4 sí, 6+ probablemente no) y los datos del juego en `assets/json/`
+(no están en el repo).
 
 ## Documentación
 
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md): qué hace cada archivo y cómo fluye una partida.
 - [docs/PROTOCOL.md](docs/PROTOCOL.md): todos los mensajes entre cliente y servidor.
+- [docs/TESTS.md](docs/TESTS.md): cómo funcionan los tests.
 - [docs/BUGS.md](docs/BUGS.md): bugs conocidos, pendientes de arreglar.
